@@ -1,5 +1,6 @@
 import { getCloudflareEnv } from "@/lib/cloudflare";
-import { recordBuildDelivery, updateBuildJob } from "@/lib/build-store";
+import { getBuildByCoderJobId, recordBuildDelivery, updateBuildJob } from "@/lib/build-store";
+import { deliverPreviewToMeeting } from "@/lib/meet-delivery";
 import { coderWebhookSchema, verifyCoderWebhook } from "@/lib/waki-coder-webhook";
 
 export const runtime = "nodejs";
@@ -9,7 +10,8 @@ export async function POST(request: Request) {
   const timestamp = request.headers.get("x-waki-timestamp") || "";
   const signature = request.headers.get("x-waki-signature") || "";
   const delivery = request.headers.get("x-waki-delivery") || "";
-  const { DB, WAKI_CODER_WEBHOOK_SECRET } = getCloudflareEnv();
+  const env = getCloudflareEnv();
+  const { DB, WAKI_CODER_WEBHOOK_SECRET } = env;
   const secret = WAKI_CODER_WEBHOOK_SECRET || "";
   if (!delivery || !verifyCoderWebhook({ rawBody, timestamp, signature, secret })) {
     return new Response("Invalid callback", { status: 401 });
@@ -31,5 +33,9 @@ export async function POST(request: Request) {
     previewExpiresAt: event.previewExpiresAt,
     error: event.error || null,
   });
+  if (event.status === "PREVIEW_READY") {
+    const build = await getBuildByCoderJobId(DB, event.jobId);
+    if (build) await deliverPreviewToMeeting(DB, env, build);
+  }
   return Response.json({ received: true });
 }

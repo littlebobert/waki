@@ -54,6 +54,33 @@ export async function getBuildJob(db: D1Database, id: string) {
   return row ? map(row) : null;
 }
 
+export async function getBuildByCoderJobId(db: D1Database, coderJobId: string) {
+  const row = await db.prepare("SELECT * FROM build_jobs WHERE coder_job_id = ?").bind(coderJobId).first<BuildRow>();
+  return row ? map(row) : null;
+}
+
+export async function claimBuildChatDelivery(db: D1Database, buildId: string) {
+  const result = await db.prepare(
+    `INSERT INTO build_chat_deliveries (build_id, status, attempts)
+     VALUES (?, 'sending', 1)
+     ON CONFLICT(build_id) DO UPDATE SET status = 'sending', attempts = attempts + 1, updated_at = CURRENT_TIMESTAMP
+     WHERE status = 'failed' AND attempts < 3`,
+  ).bind(buildId).run();
+  return result.meta.changes > 0;
+}
+
+export async function completeBuildChatDelivery(db: D1Database, buildId: string) {
+  await db.prepare(
+    "UPDATE build_chat_deliveries SET status = 'sent', sent_at = CURRENT_TIMESTAMP, last_error = NULL, updated_at = CURRENT_TIMESTAMP WHERE build_id = ?",
+  ).bind(buildId).run();
+}
+
+export async function failBuildChatDelivery(db: D1Database, buildId: string, error: string) {
+  await db.prepare(
+    "UPDATE build_chat_deliveries SET status = 'failed', last_error = ?, updated_at = CURRENT_TIMESTAMP WHERE build_id = ?",
+  ).bind(error.slice(0, 1000), buildId).run();
+}
+
 export async function getBuildForSession(db: D1Database, sessionId: string) {
   const row = await db.prepare("SELECT * FROM build_jobs WHERE session_id = ?").bind(sessionId).first<BuildRow>();
   return row ? map(row) : null;

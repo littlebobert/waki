@@ -6,6 +6,7 @@ export interface WakiEnv {
   ATTENDEE_VIDEO_STREAM: DurableObjectNamespace;
   ATTENDEE_VIDEO_STREAM_TOKEN: string;
   ATTENDEE_WEBHOOK_SECRET: string;
+  ATTENDEE_API_KEY: string;
   WAKI_PUBLIC_URL: string;
   WAKI_CODER_BASE_URL: string;
   WAKI_CODER_API_TOKEN: string;
