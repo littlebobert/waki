@@ -13,7 +13,7 @@ export async function deliverPreviewToMeeting(db: D1Database, env: Pick<WakiEnv,
     if (!session?.attendeeBotId) throw new Error("The meeting bot is no longer available.");
     if (!env.ATTENDEE_API_KEY) throw new Error("Attendee API key is not configured.");
     const expiry = build.previewExpiresAt ? `\nPreview expires ${new Date(build.previewExpiresAt).toISOString()}.` : "";
-    const response = await fetch(`https://app.attendee.dev/api/v1/bots/${encodeURIComponent(session.attendeeBotId)}/chat_messages`, {
+    const response = await fetch(`https://app.attendee.dev/api/v1/bots/${encodeURIComponent(session.attendeeBotId)}/send_chat_message`, {
       method: "POST",
       headers: { Authorization: `Token ${env.ATTENDEE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
