@@ -66,6 +66,16 @@ button { color: inherit; }
 .meeting-url-row button:disabled { opacity: .6; cursor: not-allowed; }
 .meeting-join-card > small { display: flex; align-items: center; gap: 7px; margin-top: 8px; color: var(--muted); font-size: 9px; text-transform: capitalize; }
 .meeting-join-card .live-dot { width: 6px; height: 6px; }
+.live-build-card { margin-top: 12px; padding: 11px; border: 1px solid #c7cfc2; border-radius: 10px; background: #f8f7f2; }
+.live-build-card button, .preview-ready a { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 34px; padding: 0 12px; border: 0; border-radius: 8px; color: white; background: var(--moss-dark); font-size: 10px; font-weight: 700; text-decoration: none; cursor: pointer; }
+.live-build-card button:disabled { opacity: .6; cursor: wait; }
+.build-progress div { display: flex; justify-content: space-between; gap: 12px; color: #596056; font-size: 10px; }
+.build-progress progress { width: 100%; height: 6px; margin-top: 8px; accent-color: var(--moss-dark); }
+.preview-ready, .build-failed { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.preview-ready { align-items: flex-start; }
+.preview-ready small, .build-failed span { color: var(--muted); font-size: 9px; }
+.preview-ready small { margin-top: 0; text-transform: none; }
+.build-failed span { color: #a3402d; }
 .example-divider { display: flex; align-items: center; gap: 16px; margin: 18px 0 18px; color: var(--ink); font: 700 18px Manrope, sans-serif; letter-spacing: -.02em; }
 .example-divider::before, .example-divider::after { content: ""; height: 1px; flex: 1; background: var(--line); }
 .example-divider span { padding: 0 5px; }

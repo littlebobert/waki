@@ -18,6 +18,15 @@ type LiveSession = {
   transcript: string;
   terminal: boolean;
 };
+type LiveBuild = {
+  id: string;
+  status: string;
+  stage: string;
+  percent: number;
+  previewUrl: string | null;
+  previewExpiresAt: string | null;
+  error: string | null;
+};
 
 type Region = "All" | "EMEA" | "NA" | "APAC" | "LATAM";
 
@@ -49,6 +58,11 @@ const copy = {
     botState: "Bot state",
     waitingTranscript: "Waki joined. Waiting for someone to speak…",
     joinError: "Could not join this meeting.",
+    build: "Build this app",
+    building: "Building your app…",
+    openApp: "Open app",
+    retryBuild: "Try build again",
+    previewExpires: "Preview expires",
     screenReady: "Screen context ready",
     screenHelp: "Attendee is connected for live transcript capture.",
     transcript: "Live transcript",
@@ -90,6 +104,11 @@ const copy = {
     botState: "ボットの状態",
     waitingTranscript: "Wakiが参加しました。発言を待っています…",
     joinError: "このミーティングに参加できませんでした。",
+    build: "このアプリを作る",
+    building: "アプリを作成中…",
+    openApp: "アプリを開く",
+    retryBuild: "もう一度試す",
+    previewExpires: "プレビュー期限",
     screenReady: "画面共有の準備完了",
     screenHelp: "Attendeeでリアルタイム文字起こしを取得中です。",
     transcript: "リアルタイム文字起こし",
@@ -126,6 +145,8 @@ export function MeetingStudio() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [botState, setBotState] = useState("idle");
   const [isJoining, setIsJoining] = useState(false);
+  const [build, setBuild] = useState<LiveBuild | null>(null);
+  const [isStartingBuild, setIsStartingBuild] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState<Region>("All");
   const [period, setPeriod] = useState<"Monthly" | "Weekly">("Monthly");
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
@@ -172,6 +193,41 @@ export function MeetingStudio() {
     };
   }, [sessionId, t.genericError, t.joinError]);
 
+  useEffect(() => {
+    if (!build || build.status === "PREVIEW_READY" || build.status === "FAILED") return;
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/builds/${build.id}`, { cache: "no-store" });
+        const data = await response.json() as { build?: LiveBuild; error?: string };
+        if (!response.ok || !data.build) throw new Error(data.error || t.genericError);
+        setBuild(data.build);
+      } catch (caught) {
+        setError(caught instanceof Error ? caught.message : t.genericError);
+      }
+    }, 2000);
+    return () => window.clearTimeout(timer);
+  }, [build, t.genericError]);
+
+  async function startBuild() {
+    if (!sessionId) return;
+    setIsStartingBuild(true);
+    setError("");
+    try {
+      const response = await fetch("/api/builds", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      });
+      const data = await response.json() as { build?: LiveBuild; error?: string };
+      if (!response.ok || !data.build) throw new Error(data.error || t.genericError);
+      setBuild(data.build);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : t.genericError);
+    } finally {
+      setIsStartingBuild(false);
+    }
+  }
+
   async function joinMeeting() {
     setIsJoining(true);
     setError("");
@@ -184,6 +240,7 @@ export function MeetingStudio() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || t.joinError);
       setTranscript("");
+      setBuild(null);
       setSessionId(data.sessionId);
       setBotState(data.state || "joining");
     } catch (caught) {
@@ -250,6 +307,26 @@ export function MeetingStudio() {
             </button>
           </div>
           {sessionId && <small><span className="live-dot" /> {t.botState}: {botState.replaceAll("_", " ")}</small>}
+          {sessionId && transcript.trim() && (
+            <div className="live-build-card">
+              {!build && <button onClick={startBuild} disabled={isStartingBuild}>{isStartingBuild ? t.building : t.build} <ArrowRight size={14} /></button>}
+              {build && build.status !== "PREVIEW_READY" && build.status !== "FAILED" && (
+                <div className="build-progress">
+                  <div><strong>{build.stage || t.building}</strong><span>{build.percent}%</span></div>
+                  <progress max="100" value={build.percent} />
+                </div>
+              )}
+              {build?.status === "PREVIEW_READY" && build.previewUrl && (
+                <div className="preview-ready">
+                  <a href={build.previewUrl} target="_blank" rel="noopener noreferrer">{t.openApp} <ArrowRight size={14} /></a>
+                  {build.previewExpiresAt && <small>{t.previewExpires}: {new Date(build.previewExpiresAt).toLocaleString()}</small>}
+                </div>
+              )}
+              {build?.status === "FAILED" && (
+                <div className="build-failed"><span>{build.error || t.genericError}</span><button onClick={() => { setBuild(null); void startBuild(); }}>{t.retryBuild}</button></div>
+              )}
+            </div>
+          )}
           {error && <p className="error-message">{error}</p>}
         </div>
       </section>
