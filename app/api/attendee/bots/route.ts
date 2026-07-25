@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   const meetingUrl = typeof body?.meetingUrl === "string" ? body.meetingUrl.trim() : "";
 
   if (!isSupportedMeetingUrl(meetingUrl)) {
-    return Response.json({ error: "Enter a valid Google Meet, Zoom, or Microsoft Teams HTTPS URL." }, { status: 400 });
+    return Response.json({ error: "Enter a valid Google Meet HTTPS URL." }, { status: 400 });
   }
 
   const apiKey = process.env.ATTENDEE_API_KEY;

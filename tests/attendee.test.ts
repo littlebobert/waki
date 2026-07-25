@@ -23,15 +23,13 @@ describe("Attendee integration helpers", () => {
     expect(verifyWebhookSignature({ ...payload, bot_id: "bot_2" }, signature, secret)).toBe(false);
   });
 
-  it.each([
-    "https://meet.google.com/abc-defg-hij",
-    "https://us02web.zoom.us/j/123456",
-    "https://teams.microsoft.com/l/meetup-join/abc",
-  ])("accepts supported meeting URL %s", (url) => {
-    expect(isSupportedMeetingUrl(url)).toBe(true);
+  it("accepts a Google Meet URL", () => {
+    expect(isSupportedMeetingUrl("https://meet.google.com/abc-defg-hij")).toBe(true);
   });
 
   it.each([
+    "https://us02web.zoom.us/j/123456",
+    "https://teams.microsoft.com/l/meetup-join/abc",
     "http://meet.google.com/abc-defg-hij",
     "https://example.com/meeting",
     "not-a-url",

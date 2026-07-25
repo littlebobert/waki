@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200">
+  <rect width="1600" height="1200" fill="#ffffff"/>
+  <g font-family="Menlo, Monaco, 'Courier New', monospace" fill="#1f1f1f">
+    <text x="110" y="105" font-size="38" font-weight="700">HACKATHON TEAMS</text>
+    <text x="110" y="153" font-size="23" fill="#555555">Team name — project description</text>
+    <line x1="110" y1="186" x2="1490" y2="186" stroke="#d7d7d7" stroke-width="2"/>
+
+    <text x="110" y="270" font-size="24"><tspan font-weight="700">01  Pixel Pilots</tspan><tspan fill="#555555"> — AI accessibility checker for design mockups</tspan></text>
+    <text x="110" y="350" font-size="24"><tspan font-weight="700">02  Compost Club</tspan><tspan fill="#555555"> — Neighborhood food waste pickup coordination platform</tspan></text>
+    <text x="110" y="430" font-size="24"><tspan font-weight="700">03  Quiet Quokka</tspan><tspan fill="#555555"> — Focus rooms matched by working style</tspan></text>
+    <text x="110" y="510" font-size="24"><tspan font-weight="700">04  Signal Garden</tspan><tspan fill="#555555"> — Visualizes community air quality sensor data</tspan></text>
+    <text x="110" y="590" font-size="24"><tspan font-weight="700">05  Patch Notes</tspan><tspan fill="#555555"> — Turns product changes into customer updates</tspan></text>
+    <text x="110" y="670" font-size="24"><tspan font-weight="700">06  Night Owl Labs</tspan><tspan fill="#555555"> — Safer late-night walking route planner</tspan></text>
+    <text x="110" y="750" font-size="24"><tspan font-weight="700">07  Tiny Triumphs</tspan><tspan fill="#555555"> — Celebrates small habits with shared streaks</tspan></text>
+    <text x="110" y="830" font-size="24"><tspan font-weight="700">08  Borrowed Time</tspan><tspan fill="#555555"> — Local library for rarely used tools</tspan></text>
+    <text x="110" y="910" font-size="24"><tspan font-weight="700">09  Mood Mosaic</tspan><tspan fill="#555555"> — Anonymous emotional pulse for remote teams</tspan></text>
+    <text x="110" y="990" font-size="24"><tspan font-weight="700">10  Side Quest</tspan><tspan fill="#555555"> — Maps spontaneous adventures around your city</tspan></text>
+
+    <line x1="110" y1="1050" x2="1490" y2="1050" stroke="#d7d7d7" stroke-width="2"/>
+    <text x="110" y="1100" font-size="20" fill="#777777">Notes:</text>
+  </g>
+</svg>

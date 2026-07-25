@@ -18,12 +18,7 @@ export const transcriptUpdateSchema = z.object({
   }),
 });
 
-const supportedMeetingHosts = [
-  "meet.google.com",
-  "zoom.us",
-  "teams.microsoft.com",
-  "teams.live.com",
-];
+const supportedMeetingHosts = ["meet.google.com"];
 
 export const terminalBotStates = new Set(["ended", "fatal_error", "data_deleted"]);
 

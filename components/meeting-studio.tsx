@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
-  ArrowUpRight,
+  ArrowRight,
   ChevronRight,
   Clock3,
   LayoutDashboard,
@@ -38,12 +38,12 @@ const copy = {
     canvas: "Meeting canvas",
     headline: "Ideas, made present.",
     intro: "Waki listens from the side, then quietly turns the room's intent into something everyone can use.",
-    source: "Example input",
-    conversation: "Example conversation",
-    listening: "Example",
+    conversation: "Example meeting",
+    listening: "Sample",
+    exampleTitle: "Example meeting",
+    viewDashboard: "View the dashboard Waki made",
     joinTitle: "Try it with your meeting",
-    joinHelp: "Paste a live meeting link to replace the example below with your own transcript.",
-    meetingUrl: "Google Meet, Zoom, or Teams URL",
+    meetingUrl: "Google Meet URL",
     join: "Join with Waki",
     joining: "Joining meeting…",
     botState: "Bot state",
@@ -79,12 +79,12 @@ const copy = {
     canvas: "ミーティングキャンバス",
     headline: "アイデアを、かたちに。",
     intro: "Wakiは会話のそばで耳を傾け、みんなの想いを静かに使えるかたちへ変えていきます。",
-    source: "入力例",
-    conversation: "会話の例",
+    conversation: "ミーティング例",
     listening: "サンプル",
+    exampleTitle: "ミーティング例",
+    viewDashboard: "Wakiが作ったダッシュボードを見る",
     joinTitle: "自分のミーティングで試す",
-    joinHelp: "ライブ会議のリンクを貼ると、下の例が実際の文字起こしに置き換わります。",
-    meetingUrl: "Google Meet、Zoom、TeamsのURL",
+    meetingUrl: "Google MeetのURL",
     join: "Wakiを参加させる",
     joining: "ミーティングに参加中…",
     botState: "ボットの状態",
@@ -128,6 +128,7 @@ export function MeetingStudio() {
   const [isJoining, setIsJoining] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState<Region>("All");
   const [period, setPeriod] = useState<"Monthly" | "Weekly">("Monthly");
+  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const t = copy[locale];
 
   useEffect(() => {
@@ -231,9 +232,7 @@ export function MeetingStudio() {
       <section className="live-meeting-section" aria-labelledby="live-meeting-title">
         <div className="meeting-join-card">
           <div className="meeting-join-heading">
-            <span className="live-input-label">Live input</span>
             <h2 id="live-meeting-title">{t.joinTitle}</h2>
-            <p>{t.joinHelp}</p>
           </div>
           <div className="meeting-url-row">
             <span><Link2 size={15} /></span>
@@ -255,13 +254,12 @@ export function MeetingStudio() {
         </div>
       </section>
 
-      <div className="example-divider"><span>Example</span></div>
+      <div className="example-divider"><span>{t.exampleTitle}</span></div>
 
-      <section className="studio-grid">
+      <section className={`studio-grid ${isDashboardOpen ? "dashboard-open" : "dashboard-closed"}`}>
         <aside className="conversation-panel panel">
           <div className="panel-header">
             <div>
-              <span className="section-label">{t.source}</span>
               <h2>{t.conversation}</h2>
             </div>
             <div className="listening-pill"><Mic2 size={13} /> {t.listening}</div>
@@ -295,9 +293,14 @@ export function MeetingStudio() {
             <span><Clock3 size={13} /> {t.elapsed}</span>
             <span>{transcript.length.toLocaleString(locale === "ja" ? "ja-JP" : "en-US")} {t.characters}</span>
           </div>
+          {!isDashboardOpen && (
+            <button className="reveal-dashboard-button" onClick={() => setIsDashboardOpen(true)}>
+              {t.viewDashboard} <ArrowRight size={15} />
+            </button>
+          )}
         </aside>
 
-        <section className="artifact-panel panel">
+        {isDashboardOpen && <section className="artifact-panel panel">
           <div className="artifact-topline">
             <div className="artifact-badge"><span>脇</span> {t.madeThis}</div>
             <div className="mode-badge">{t.demoMode}</div>
@@ -309,7 +312,6 @@ export function MeetingStudio() {
               <h2>{artifact.title}</h2>
               <p>{artifact.subtitle}</p>
             </div>
-            <button className="open-button">{t.open} <ArrowUpRight size={15} /></button>
           </div>
 
           <div className="dashboard-controls" aria-label="Revenue dashboard controls">
@@ -390,7 +392,7 @@ export function MeetingStudio() {
               </div>
             </div>
           </div>
-        </section>
+        </section>}
       </section>
 
       <footer><span>{t.footer}</span><span>Prototype · Tokyo · 2026</span></footer>
