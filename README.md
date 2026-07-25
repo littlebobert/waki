@@ -94,15 +94,40 @@ No additional Attendee dashboard webhook is required for video; the WebSocket UR
 
 For local D1-backed development, `npm run dev` uses the local Wrangler binding configured by OpenNext. Attendee cannot call localhost, so use the deployed Worker for a real webhook smoke test. Webhook deliveries can be inspected in the Attendee bot detail under **Webhooks**.
 
+## Waki Coder app building
+
+The generated-app path runs [waki-coder](https://github.com/q-cheng/waki-coder) as a separate private Node service. Do not deploy its long-running SQLite worker inside Cloudflare. The service requires Node 22.5+, one API process, exactly one worker, and a persistent volume for its SQLite database. Configure its Qwen, Qoder, and Daytona credentials, then set:
+
+```bash
+BOT_AUTH_ENABLED=true
+BOT_API_TOKEN=a-long-random-service-token
+WEBHOOK_SIGNING_SECRET=a-different-long-random-secret
+CALLBACK_ALLOWED_ORIGINS=https://your-waki-worker.example.com
+```
+
+The Node API must be reachable over HTTPS from Cloudflare, even if access is otherwise private behind its bearer token. In Waki, configure `WAKI_CODER_BASE_URL` as a Worker variable and add the two matching secrets:
+
+```bash
+npx wrangler secret put WAKI_CODER_API_TOKEN
+npx wrangler secret put WAKI_CODER_WEBHOOK_SECRET
+```
+
+Apply the build-job migration before deploying:
+
+```bash
+npx wrangler d1 migrations apply waki-database --remote
+```
+
+Waki submits transcript-only requests in this first slice. Sampled video frames are not included because they are not yet stored at public HTTPS URLs. The service sends signed progress callbacks to `/api/waki-coder/webhook`, while the browser-safe Waki status route also reconciles by polling.
+
 ## Current vertical slice
 
-1. Paste a meeting URL and send Waki into the call, or edit the transcript manually.
+1. Paste a Google Meet URL and send Waki into the call.
 2. Signed Attendee webhooks populate the live transcript in D1; the browser polls the session every two seconds.
-3. Select **Build from conversation**.
-4. QwenCloud reads the meeting evidence and returns a validated `ProductSpec`.
-5. Qoder applies that spec to the seeded React/Vite frontend using constrained file edits.
-6. Daytona installs dependencies, builds and smoke-tests the app, then returns a signed expiring preview URL.
-7. If Attendee, the model, or the network is unavailable, manual input and deterministic generation remain available.
+3. Select **Build this app** once transcript text is available.
+4. Waki submits an idempotent request to the separate Waki Coder service.
+5. The UI shows real Qwen, Qoder, build, and test progress before opening the signed Daytona preview.
+6. The existing `POST /api/generate` structured landing-page demo remains separate from the generated-app path.
 
 ## Architecture
 
@@ -110,7 +135,11 @@ For local D1-backed development, `npm run dev` uses the local Wrangler binding c
 - `components/meeting-studio.tsx` — transcript and interactive artifact UI
 - `app/api/generate/route.ts` — structured LLM generation and fallback path
 - `app/api/attendee/` — bot creation, signed webhook ingestion, and live-session reads
+- `app/api/builds/` — browser-safe generated-app creation and status routes
+- `app/api/waki-coder/webhook/` — signed builder progress callback ingestion
 - `lib/attendee.ts` — URL validation and webhook signature verification
+- `lib/waki-coder.ts` — typed private service client and transcript mapping
+- `lib/build-store.ts` — D1 build progress and preview persistence
 - `lib/meeting-store.ts` — D1 session and transcript persistence
 - `lib/artifact.ts` — Zod contract, sample data, and deterministic generator
 - `migrations/` — D1 schema migrations
