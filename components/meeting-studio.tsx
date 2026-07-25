@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowUpRight,
-  Check,
   ChevronRight,
-  Circle,
   Clock3,
   LayoutDashboard,
   Link2,
@@ -28,11 +26,13 @@ type LiveSession = {
 type Region = "All" | "EMEA" | "NA" | "APAC" | "LATAM";
 
 const salesRows = [
-  { region: "EMEA" as const, april: 412300, may: 398110, june: 451900, conversion: 3.1 },
-  { region: "NA" as const, april: 688020, may: 702450, june: 731200, conversion: 4.2 },
-  { region: "APAC" as const, april: 301540, may: 355890, june: 340760, conversion: 2.7 },
-  { region: "LATAM" as const, april: 98700, may: 121300, june: 134050, conversion: 2.2 },
+  { region: "EMEA" as const, months: [356200, 382400, 391800, 412300, 398110, 451900], conversion: 3.1 },
+  { region: "NA" as const, months: [601500, 624800, 655200, 688020, 702450, 731200], conversion: 4.2 },
+  { region: "APAC" as const, months: [272100, 285900, 294600, 301540, 355890, 340760], conversion: 2.7 },
+  { region: "LATAM" as const, months: [82100, 88600, 94200, 98700, 121300, 134050], conversion: 2.2 },
 ];
+
+const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
 
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
@@ -230,20 +230,6 @@ export function MeetingStudio() {
     }
   }
 
-  function toggleAction(id: string) {
-    setArtifact((current) => ({
-      ...current,
-      actions: current.actions.map((action) =>
-        action.id === id ? { ...action, done: !action.done } : action,
-      ),
-    }));
-  }
-
-  const completed = useMemo(
-    () => artifact.actions.filter((action) => action.done).length,
-    [artifact.actions],
-  );
-
   function resetDemo() {
     setTranscript(sampleTranscript);
     setMeetingUrl("");
@@ -337,7 +323,7 @@ export function MeetingStudio() {
               <div className="sheet-row sheet-header"><span>Region</span><span>Apr</span><span>May</span><span>Jun</span><span>Conv %</span></div>
               {salesRows.map((row) => (
                 <div className={`sheet-row ${row.region === "APAC" ? "sheet-flagged" : ""}`} key={row.region}>
-                  <strong>{row.region}</strong><span>{money.format(row.april)}</span><span>{money.format(row.may)}</span><span>{money.format(row.june)}</span><span>{row.conversion}</span>
+                  <strong>{row.region}</strong><span>{money.format(row.months[3])}</span><span>{money.format(row.months[4])}</span><span>{money.format(row.months[5])}</span><span>{row.conversion}</span>
                 </div>
               ))}
             </div>
@@ -396,69 +382,26 @@ export function MeetingStudio() {
           </div>
 
           <div className="revenue-chart-card">
-            <div className="chart-heading"><strong>{selectedRegion === "All" ? "All regions" : selectedRegion} · {period.toLowerCase()} revenue</strong><span>Connected to source sheet</span></div>
-            <div className="revenue-chart">
+            <div className="chart-heading"><strong>{selectedRegion === "All" ? "All regions" : selectedRegion} · {period.toLowerCase()} revenue</strong><span>Jan–Jun · connected to source sheet</span></div>
+            <div className={`revenue-chart ${visibleSales.length === 1 ? "single-region" : ""}`}>
               {visibleSales.map((row) => (
                 <div className="chart-group" key={row.region}>
                   <div className="bar-stack">
-                    <span style={{ height: `${Math.max(18, row.april / 8000)}px` }} />
-                    <span style={{ height: `${Math.max(18, row.may / 8000)}px` }} />
-                    <span className={row.region === "APAC" ? "alert" : ""} style={{ height: `${Math.max(18, row.june / 8000)}px` }} />
+                    {row.months.map((value, index) => (
+                      <span
+                        className={row.region === "APAC" && index === row.months.length - 1 ? "alert" : ""}
+                        style={{ height: `${Math.max(18, value / 8000)}px` }}
+                        key={`${row.region}-${monthLabels[index]}`}
+                        title={`${row.region} ${monthLabels[index]}: ${money.format(value)}`}
+                      />
+                    ))}
                   </div>
                   <small>{row.region}{row.region === "APAC" ? " ↘" : ""}</small>
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="artifact-columns">
-            <div>
-              <div className="subsection-heading">
-                <h3>{t.nextMoves}</h3><span>{completed}/{artifact.actions.length} {t.done}</span>
-              </div>
-              <div className="action-list">
-                {artifact.actions.map((action) => (
-                  <button className={`action-item ${action.done ? "done" : ""}`} key={action.id} onClick={() => toggleAction(action.id)}>
-                    <span className="check-circle">{action.done ? <Check size={14} /> : <Circle size={15} />}</span>
-                    <span className="action-copy"><strong>{action.title}</strong><small>{action.owner} · {action.due}</small></span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="spec-section">
-                <div className="subsection-heading"><h3>{t.acceptance}</h3></div>
-                <div className="acceptance-list">
-                  {artifact.acceptanceCriteria.map((item) => (
-                    <div className="acceptance-item" key={item.id}>
-                      <Check size={13} />
-                      <span>{item.criterion}</span>
-                      <small>{t.verifiedBy} {item.verification}</small>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="insight-column">
-              <div className="subsection-heading"><h3>{t.decisions}</h3></div>
-              {artifact.decisions.map((decision, index) => (
-                <div className="decision" key={`${decision.title}-${index}`}>
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <div><strong>{decision.title}</strong><p>{decision.detail}</p></div>
-                </div>
-              ))}
-              {artifact.risks.length > 0 && (
-                <div className="risk-card">
-                  <span>{t.watch}</span>
-                  {artifact.risks.map((risk) => <p key={risk}>{risk}</p>)}
-                </div>
-              )}
-              {artifact.constraints.length > 0 && (
-                <div className="constraint-card">
-                  <span>{t.constraints}</span>
-                  {artifact.constraints.map((constraint) => <p key={constraint}>{constraint}</p>)}
-                </div>
-              )}
+            <div className="chart-legend">
+              {monthLabels.map((month, index) => <span key={month}><i style={{ opacity: .42 + index * .1 }} />{month}</span>)}
             </div>
           </div>
 
