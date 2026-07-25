@@ -51,8 +51,11 @@ button { color: inherit; }
 .panel-header h2, .artifact-heading h2 { margin: 5px 0 0; font-family: Manrope, sans-serif; letter-spacing: -.035em; }
 .panel-header h2 { font-size: 22px; }
 .listening-pill, .mode-badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 6px 9px; color: var(--moss); background: var(--soft-green); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
-.meeting-join-card { margin-top: 22px; }
-.meeting-join-card > label { display: block; margin-bottom: 8px; color: #555a52; font-size: 11px; font-weight: 700; }
+.meeting-join-card { margin-top: 22px; padding: 14px; border: 1px solid #cfd6ca; border-radius: 13px; background: var(--soft-green); }
+.meeting-join-heading { margin-bottom: 10px; }
+.live-input-label { display: block; margin-bottom: 5px; color: var(--moss); font-size: 8px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.meeting-join-heading label { display: block; color: #41493e; font-size: 12px; font-weight: 700; }
+.meeting-join-heading p { margin: 4px 0 0; color: #778073; font-size: 9px; line-height: 1.45; }
 .meeting-url-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 6px 6px 11px; border: 1px solid var(--line); border-radius: 12px; background: #f1efe8; }
 .meeting-url-row > span { display: grid; color: var(--moss); }
 .meeting-url-row input { min-width: 0; border: 0; outline: 0; color: var(--ink); background: transparent; font-size: 11px; }
@@ -61,7 +64,9 @@ button { color: inherit; }
 .meeting-url-row button:disabled { opacity: .6; cursor: not-allowed; }
 .meeting-join-card > small { display: flex; align-items: center; gap: 7px; margin-top: 8px; color: var(--muted); font-size: 9px; text-transform: capitalize; }
 .meeting-join-card .live-dot { width: 6px; height: 6px; }
-.screen-source { margin: 14px 0 20px; overflow: hidden; border: 1px solid #d8d6cd; border-radius: 12px; background: #f8f7f2; }
+.example-divider { display: flex; align-items: center; gap: 9px; margin: 15px 0 10px; color: #999c94; font-size: 8px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.example-divider::before, .example-divider::after { content: ""; height: 1px; flex: 1; background: var(--line); }
+.screen-source { margin: 0 0 20px; overflow: hidden; border: 1px solid #d8d6cd; border-radius: 12px; background: #f8f7f2; }
 .screen-source-head { display: grid; grid-template-columns: auto 1fr auto; gap: 9px; align-items: center; padding: 9px 10px; border-bottom: 1px solid #dfddd5; background: #eeece6; }
 .capture-icon { width: 29px; height: 29px; display: grid; place-items: center; color: var(--moss); background: var(--soft-green); border-radius: 8px; }
 .screen-source-head strong, .screen-source-head span { display: block; }

@@ -11,7 +11,6 @@ import {
   Play,
   RotateCcw,
   Sparkles,
-  Users,
 } from "lucide-react";
 import { Artifact, sampleArtifact, sampleTranscript } from "@/lib/artifact";
 
@@ -39,19 +38,18 @@ const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD
 const copy = {
   en: {
     home: "Waki home",
-    meeting: "Product beta sync",
-    room: "4 in room",
     profile: "Open profile",
     canvas: "Meeting canvas",
     headline: "Ideas, made present.",
     intro: "Waki listens from the side, then quietly turns the room's intent into something everyone can use.",
     reset: "Reset demo",
     generating: "Shaping the room…",
-    build: "Build from conversation",
-    source: "Source",
-    conversation: "Conversation",
-    listening: "Listening",
-    joinTitle: "Bring Waki into the meeting",
+    build: "Generate dashboard",
+    source: "Example input",
+    conversation: "Example conversation",
+    listening: "Example",
+    joinTitle: "Try it with your meeting",
+    joinHelp: "Paste a live meeting link to replace the example below with your own transcript.",
     meetingUrl: "Google Meet, Zoom, or Teams URL",
     join: "Join with Waki",
     joining: "Joining meeting…",
@@ -86,19 +84,18 @@ const copy = {
   },
   ja: {
     home: "Waki ホーム",
-    meeting: "プロダクトβ版 定例",
-    room: "4人が参加中",
     profile: "プロフィールを開く",
     canvas: "ミーティングキャンバス",
     headline: "アイデアを、かたちに。",
     intro: "Wakiは会話のそばで耳を傾け、みんなの想いを静かに使えるかたちへ変えていきます。",
     reset: "デモをリセット",
     generating: "会話をかたちにしています…",
-    build: "会話からつくる",
-    source: "ソース",
-    conversation: "会話",
-    listening: "聞き取り中",
-    joinTitle: "Wakiをミーティングに参加させる",
+    build: "ダッシュボードを生成",
+    source: "入力例",
+    conversation: "会話の例",
+    listening: "サンプル",
+    joinTitle: "自分のミーティングで試す",
+    joinHelp: "ライブ会議のリンクを貼ると、下の例が実際の文字起こしに置き換わります。",
     meetingUrl: "Google Meet、Zoom、TeamsのURL",
     join: "Wakiを参加させる",
     joining: "ミーティングに参加中…",
@@ -259,12 +256,7 @@ export function MeetingStudio() {
           <span className="brand-mark">脇</span>
           <span>Waki</span>
         </a>
-        <div className="meeting-status">
-          <span className="live-dot" />
-          {t.meeting}
-          <span className="status-divider" />
-          <Users size={14} /> {t.room}
-        </div>
+        <div />
         <div className="topbar-actions">
           <div className="language-switch" role="group" aria-label={t.locale}>
             <button className={locale === "en" ? "active" : ""} onClick={() => changeLocale("en")} aria-pressed={locale === "en"}>EN</button>
@@ -302,7 +294,11 @@ export function MeetingStudio() {
           </div>
 
           <div className="meeting-join-card">
-            <label htmlFor="meeting-url">{t.joinTitle}</label>
+            <div className="meeting-join-heading">
+              <span className="live-input-label">Live input</span>
+              <label htmlFor="meeting-url">{t.joinTitle}</label>
+              <p>{t.joinHelp}</p>
+            </div>
             <div className="meeting-url-row">
               <span><Link2 size={15} /></span>
               <input
@@ -320,6 +316,8 @@ export function MeetingStudio() {
             </div>
             {sessionId && <small><span className="live-dot" /> {t.botState}: {botState.replaceAll("_", " ")}</small>}
           </div>
+
+          <div className="example-divider"><span>Example shown below</span></div>
 
           <div className="screen-source">
             <div className="screen-source-head">
@@ -425,7 +423,11 @@ export function MeetingStudio() {
                 </defs>
                 <polygon points={`0,40 ${trendPoints} 100,40`} fill="url(#trend-fill)" />
                 <polyline points={trendPoints} fill="none" stroke="#52634d" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-                {monthlyRevenue.map((value, index) => <circle key={monthLabels[index]} cx={index * 20} cy={36 - (value / peakRevenue) * 30} r="1.3" fill="#52634d" />)}
+                {monthlyRevenue.map((value, index) => {
+                  const x = index * 20;
+                  const y = 36 - (value / peakRevenue) * 30;
+                  return <line key={monthLabels[index]} x1={x} x2={x} y1={y} y2={y} stroke="#52634d" strokeWidth="4" strokeLinecap="round" vectorEffect="non-scaling-stroke" />;
+                })}
               </svg>
               <div className="trend-labels">{monthLabels.map((month) => <span key={month}>{month}</span>)}</div>
             </div>
