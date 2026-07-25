@@ -243,6 +243,14 @@ export function MeetingStudio() {
   const visibleSales = selectedRegion === "All"
     ? salesRows
     : salesRows.filter((row) => row.region === selectedRegion);
+  const monthlyRevenue = monthLabels.map((_, index) =>
+    visibleSales.reduce((total, row) => total + row.months[index], 0),
+  );
+  const peakRevenue = Math.max(...monthlyRevenue);
+  const trendPoints = monthlyRevenue
+    .map((value, index) => `${index * 20},${36 - (value / peakRevenue) * 30}`)
+    .join(" ");
+  const latestRevenue = visibleSales.reduce((total, row) => total + row.months.at(-1)!, 0);
 
   return (
     <main className="app-shell">
@@ -402,6 +410,36 @@ export function MeetingStudio() {
             </div>
             <div className="chart-legend">
               {monthLabels.map((month, index) => <span key={month}><i style={{ opacity: .42 + index * .1 }} />{month}</span>)}
+            </div>
+          </div>
+
+          <div className="dashboard-detail-grid">
+            <div className="trend-card">
+              <div className="detail-heading"><span>Revenue trend</span><strong>{money.format(latestRevenue)}</strong></div>
+              <svg className="trend-line" viewBox="0 0 100 40" preserveAspectRatio="none" aria-label="Six month revenue trend">
+                <defs>
+                  <linearGradient id="trend-fill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#52634d" stopOpacity=".2" />
+                    <stop offset="100%" stopColor="#52634d" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <polygon points={`0,40 ${trendPoints} 100,40`} fill="url(#trend-fill)" />
+                <polyline points={trendPoints} fill="none" stroke="#52634d" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+                {monthlyRevenue.map((value, index) => <circle key={monthLabels[index]} cx={index * 20} cy={36 - (value / peakRevenue) * 30} r="1.3" fill="#52634d" />)}
+              </svg>
+              <div className="trend-labels">{monthLabels.map((month) => <span key={month}>{month}</span>)}</div>
+            </div>
+
+            <div className="mix-card">
+              <div className="detail-heading"><span>Regional mix · Jun</span><strong>100%</strong></div>
+              <div className="mix-list">
+                {visibleSales.map((row) => {
+                  const share = row.months.at(-1)! / latestRevenue * 100;
+                  return <div className="mix-row" key={row.region}>
+                    <span>{row.region}</span><div><i style={{ width: `${share}%` }} /></div><strong>{share.toFixed(0)}%</strong>
+                  </div>;
+                })}
+              </div>
             </div>
           </div>
 
