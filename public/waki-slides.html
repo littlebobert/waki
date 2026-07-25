@@ -69,6 +69,19 @@
     .bubble span { display: block; margin-top: 6px; color: var(--muted); font-size: 15px; }
     .fade-out { opacity: .38; }
 
+    .japan-layout { flex: 1; display: grid; grid-template-columns: 1.05fr .95fr; align-items: center; gap: 7vw; }
+    .japan-copy .eyebrow { margin-bottom: 24px; }
+    .japan-copy h2 { max-width: 720px; font-size: clamp(48px, 5.3vw, 82px); }
+    .japan-copy p { max-width: 620px; margin-top: 28px; color: var(--ink); font-size: clamp(20px, 1.7vw, 28px); line-height: 1.5; }
+    .japan-evidence { padding-left: 5vw; border-left: 1px solid var(--line); }
+    .japan-stat strong { display: block; color: var(--persimmon); font: 700 clamp(108px, 13vw, 190px) Manrope, sans-serif; line-height: .82; letter-spacing: -.08em; }
+    .japan-stat span { display: block; max-width: 500px; margin-top: 30px; color: var(--ink); font-size: clamp(22px, 2vw, 31px); line-height: 1.35; }
+    .japan-rank { display: flex; align-items: baseline; gap: 18px; margin-top: 38px; padding-top: 26px; border-top: 1px solid var(--line); }
+    .japan-rank strong { color: var(--moss-dark); font: 700 clamp(38px, 4vw, 62px) Manrope, sans-serif; letter-spacing: -.06em; }
+    .japan-rank span { color: var(--muted); font-size: 18px; }
+    .source-note { margin-top: 24px; color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .source-note a { color: inherit; text-decoration-color: var(--line); text-underline-offset: 3px; }
+
     .solution-layout { flex: 1; display: grid; grid-template-columns: .8fr 1.2fr; align-items: center; gap: 7vw; }
     .solution-copy p { max-width: 540px; margin-top: 28px; font-size: clamp(20px, 1.7vw, 28px); line-height: 1.5; }
     .artifact { padding: 30px; border: 1px solid var(--line); border-radius: 24px; background: var(--panel); }
@@ -122,8 +135,9 @@
     @keyframes enter { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: translateX(0); } }
 
     @media (max-width: 900px) {
-      .problem-layout, .solution-layout { grid-template-columns: 1fr; gap: 32px; }
+      .problem-layout, .japan-layout, .solution-layout { grid-template-columns: 1fr; gap: 32px; }
       .meeting-trail { min-height: 380px; transform: scale(.82); transform-origin: top center; }
+      .japan-evidence { padding: 24px 0 0; border-top: 1px solid var(--line); border-left: 0; }
       .artifact { transform: scale(.83); transform-origin: top center; }
       .flow { grid-template-columns: repeat(2, 1fr); margin-top: 30px; }
       .step { min-height: 210px; }
@@ -146,12 +160,12 @@
       <div class="slide-inner">
         <div class="slide-top">
           <div class="brand"><span class="brand-mark">脇</span>Waki</div>
-          <span class="slide-no">01 / 05</span>
+          <span class="slide-no">01 / 06</span>
         </div>
         <div class="title-content">
           <span class="eyebrow">Ideas, made present.</span>
           <h1>Turn the meeting into the <span class="accent">thing itself.</span></h1>
-          <p>A quiet AI companion that listens, looks, and builds useful software while everyone is still in the room.</p>
+          <p>Built for meeting-heavy teams in Japan: Waki listens, looks, and creates the app directly while everyone is still in the room.</p>
         </div>
         <div class="title-footer"><span>Tokyo · 2026</span><span class="sponsor-powered">Powered by <strong>QwenCloud · Qoder · Daytona</strong></span></div>
       </div>
@@ -159,7 +173,7 @@
 
     <section class="slide" aria-label="The problem">
       <div class="slide-inner">
-        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">02 / 05</span></div>
+        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">02 / 06</span></div>
         <div class="problem-layout">
           <div class="problem-copy">
             <span class="eyebrow">The problem</span>
@@ -177,14 +191,32 @@
       </div>
     </section>
 
+    <section class="slide" aria-label="Why Japan">
+      <div class="slide-inner">
+        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">03 / 06</span></div>
+        <div class="japan-layout">
+          <div class="japan-copy">
+            <span class="eyebrow">Why Japan</span>
+            <h2>Japan feels the meeting load. Waki turns that time into <span class="accent">apps.</span></h2>
+            <p>The meeting already contains the intent, constraints, references, and consensus. Instead of turning it into more notes and tickets, Waki creates the app directly from the conversation and shared screen.</p>
+          </div>
+          <div class="japan-evidence">
+            <div class="japan-stat"><strong>21%</strong><span>of Japanese employees surveyed said they have too many meetings.</span></div>
+            <div class="japan-rank"><strong>#3</strong><span>highest share among 13 countries</span></div>
+            <p class="source-note">Source: <a href="https://www.capterra.jp/blog/4609/meetings-in-telework-era" target="_blank" rel="noreferrer">Capterra, 2024 Collaboration &amp; Productivity Survey</a> · Japan n=498 remote/hybrid workers</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="slide" aria-label="The solution">
       <div class="slide-inner">
-        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">03 / 05</span></div>
+        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">04 / 06</span></div>
         <div class="solution-layout">
           <div class="solution-copy">
             <span class="eyebrow">The solution</span>
-            <h2>Waki builds while you <span class="moss">talk.</span></h2>
-            <p>It combines the live conversation with what is shared on screen, then turns intent into an interactive app.</p>
+            <h2>Waki builds the app while you <span class="moss">talk.</span></h2>
+            <p>It treats the live conversation and shared screen as the product brief, so the app starts before the meeting ends.</p>
           </div>
           <div class="artifact" aria-label="Example generated revenue dashboard">
             <div class="artifact-head"><div class="made"><i>脇</i>Waki made this</div><span class="demo">Live artifact</span></div>
@@ -207,7 +239,7 @@
 
     <section class="slide" aria-label="Sponsor-powered architecture">
       <div class="slide-inner">
-        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">04 / 05</span></div>
+        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">05 / 06</span></div>
         <div class="flow-layout">
           <div class="flow-copy">
             <div><span class="eyebrow">Hackathon sponsor architecture</span><h2>Three tools. One <span class="accent">safe handoff.</span></h2></div>
@@ -225,7 +257,7 @@
 
     <section class="slide" aria-label="Hackathon sponsor spotlight">
       <div class="slide-inner">
-        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">05 / 05</span></div>
+        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">06 / 06</span></div>
         <div class="sponsor-layout">
           <div class="sponsor-head">
             <div><span class="eyebrow">Built with our hackathon sponsors</span><h2>The right tool at <span class="moss">every boundary.</span></h2></div>
