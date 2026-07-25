@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "main": ".open-next/worker.js",
+  "main": "custom-worker.ts",
   "name": "waki",
   "compatibility_date": "2026-07-25",
   "compatibility_flags": ["nodejs_compat"],
@@ -14,6 +14,20 @@
       "database_name": "waki-database",
       "database_id": "1363f06d-9741-473b-8938-bf77103c28fa",
       "migrations_dir": "migrations"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "ATTENDEE_VIDEO_STREAM",
+        "class_name": "AttendeeVideoStream"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["AttendeeVideoStream"]
     }
   ],
   "observability": {

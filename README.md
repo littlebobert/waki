@@ -58,7 +58,17 @@ npx wrangler secret put DASHSCOPE_API_KEY
 
 Set `WAKI_PUBLIC_URL` as a Cloudflare Worker variable to the deployed HTTPS origin. The resulting webhook is `https://your-origin/api/attendee/webhook`.
 
-5. Deploy, paste a meeting URL into Waki, and select **Join with Waki**. Admit the Waki participant if the meeting has a lobby. Its status and transcript should begin updating within a few seconds.
+Create a random secret for Attendee's realtime video WebSocket connection:
+
+```bash
+openssl rand -hex 32 | npx wrangler secret put ATTENDEE_VIDEO_STREAM_TOKEN
+```
+
+When Waki creates a bot, it requests Attendee's `per_participant_video` WebSocket stream at 360p for webcams and screen shares. The Cloudflare Durable Object endpoint accepts Attendee's base64 JPEG messages and samples at most one frame every five seconds per participant and source. Sampled frames are currently discarded after metadata logging: they are not decoded, stored, or sent to a model.
+
+No additional Attendee dashboard webhook is required for video; the WebSocket URL is attached to each bot creation request. The existing Attendee API key remains sufficient.
+
+5. Deploy, paste a Google Meet URL into Waki, and select **Join with Waki**. Admit the Waki participant if the meeting has a lobby. Its status and transcript should begin updating within a few seconds.
 
 For local D1-backed development, `npm run dev` uses the local Wrangler binding configured by OpenNext. Attendee cannot call localhost, so use the deployed Worker for a real webhook smoke test. Webhook deliveries can be inspected in the Attendee bot detail under **Webhooks**.
 

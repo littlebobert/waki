@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { isSupportedMeetingUrl, publicWebhookUrl } from "@/lib/attendee";
+import { publicVideoWebSocketUrl } from "@/lib/attendee-video";
 import { getCloudflareEnv } from "@/lib/cloudflare";
 import { attachAttendeeBot, createMeetingSession, markSessionError } from "@/lib/meeting-store";
 
@@ -14,11 +15,12 @@ export async function POST(request: Request) {
   }
 
   const apiKey = process.env.ATTENDEE_API_KEY;
-  if (!apiKey) {
+  const { DB, ATTENDEE_VIDEO_STREAM_TOKEN } = getCloudflareEnv();
+  if (!apiKey || !ATTENDEE_VIDEO_STREAM_TOKEN) {
     return Response.json({ error: "Attendee is not configured yet." }, { status: 503 });
   }
 
-  const { DB } = getCloudflareEnv();
+  const videoWebSocketUrl = publicVideoWebSocketUrl(request.url, ATTENDEE_VIDEO_STREAM_TOKEN);
   const sessionId = randomUUID();
   await createMeetingSession(DB, { id: sessionId, meetingUrl });
 
@@ -36,6 +38,13 @@ export async function POST(request: Request) {
         transcription_settings: {
           openai: {
             model: "gpt-4o-transcribe",
+          },
+        },
+        websocket_settings: {
+          per_participant_video: {
+            url: videoWebSocketUrl,
+            webcam_resolution: "360p",
+            screenshare_resolution: "360p",
           },
         },
         webhooks: [
