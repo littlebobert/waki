@@ -1,0 +1,8 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+allowBuilds:
+  '@qoder-ai/qoder-agent-sdk': true
+  esbuild: true
+  protobufjs: true

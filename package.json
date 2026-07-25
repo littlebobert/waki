@@ -1,0 +1,28 @@
+{
+  "name": "waki",
+  "private": true,
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @waki/api --filter @waki/worker dev",
+    "dev:api": "pnpm --filter @waki/api dev",
+    "dev:worker": "pnpm --filter @waki/worker dev",
+    "dev:bot": "tsx scripts/mock-bot-callback.ts",
+    "auth:check": "tsx scripts/check-provider-auth.ts",
+    "baseline:live": "tsx scripts/run-live-baseline.ts",
+    "start:api": "pnpm --filter @waki/api start",
+    "start:worker": "pnpm --filter @waki/worker start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "pnpm typecheck && pnpm test"
+  },
+  "devDependencies": {
+    "@qoder-ai/qoder-agent-sdk": "^1.0.15",
+    "@types/node": "^26.1.1",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}

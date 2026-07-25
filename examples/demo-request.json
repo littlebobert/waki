@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0",
+  "requestId": "req_dashboard_001",
+  "conversationId": "conv_001",
+  "userId": "user_001",
+  "project": {
+    "name": "Hackathon Team Voting",
+    "description": "Create a simple voting app for the hackathon teams shown in the attached photo"
+  },
+  "inputs": {
+    "text": [
+      {
+        "id": "text-1",
+        "content": "Marcus: Can we make a small app that shows the votes for each team?\n\nPriya: Yes. Add a small QR code for each team. When a user scans it, redirect them to that team's voting page.\n\nMarcus: Keep the voting page simple, with a submit button they can use to vote for the team."
+      }
+    ],
+    "audio": [],
+    "screenshots": [
+      {
+        "id": "team-list-photo",
+        "url": "https://drop-d2a6cd2e-f38.flaxen-winterberry.workers.dev/teams.png",
+        "mimeType": "image/png",
+        "description": "Image containing the hackathon team list"
+      }
+    ]
+  },
+  "preferences": {
+    "targetDevice": "responsive",
+    "preferredFramework": "react",
+    "language": "English",
+    "allowMockData": true,
+    "allowBackend": false
+  },
+  "callback": {
+    "type": "webhook",
+    "url": "http://127.0.0.1:4100/demo-events"
+  }
+}

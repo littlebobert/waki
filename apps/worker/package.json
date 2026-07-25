@@ -1,0 +1,14 @@
+{
+  "name": "@waki/worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts"
+  },
+  "dependencies": {
+    "@waki/core": "workspace:*",
+    "@waki/providers": "workspace:*",
+    "dotenv": "^17.4.2"
+  }
+}

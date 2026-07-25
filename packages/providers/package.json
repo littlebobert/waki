@@ -1,0 +1,14 @@
+{
+  "name": "@waki/providers",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@daytona/sdk": "^0.200.1",
+    "@qoder-ai/qoder-agent-sdk": "^1.0.15",
+    "@waki/contracts": "workspace:*",
+    "@waki/core": "workspace:*"
+  }
+}
