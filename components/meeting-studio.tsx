@@ -16,6 +16,8 @@ type Locale = "en" | "ja";
 type LiveSession = {
   session: { botState: string; errorMessage: string | null };
   transcript: string;
+  command?: { command: string; senderName: string } | null;
+  build?: LiveBuild | null;
   terminal: boolean;
 };
 type LiveBuild = {
@@ -179,6 +181,7 @@ export function MeetingStudio() {
         if (stopped) return;
         setBotState(data.session.botState);
         if (data.transcript) setTranscript(data.transcript);
+        if (data.build) setBuild(data.build);
         if (data.session.errorMessage) setError(data.session.errorMessage);
         if (!data.terminal) timer = setTimeout(refreshSession, 2000);
       } catch (caught) {
@@ -307,7 +310,7 @@ export function MeetingStudio() {
             </button>
           </div>
           {sessionId && <small><span className="live-dot" /> {t.botState}: {botState.replaceAll("_", " ")}</small>}
-          {sessionId && transcript.trim() && (
+          {sessionId && (transcript.trim() || build) && (
             <div className="live-build-card">
               {!build && <button onClick={startBuild} disabled={isStartingBuild}>{isStartingBuild ? t.building : t.build} <ArrowRight size={14} /></button>}
               {build && build.status !== "PREVIEW_READY" && build.status !== "FAILED" && (

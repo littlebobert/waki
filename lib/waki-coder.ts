@@ -97,20 +97,26 @@ export function buildDemoRequest(input: {
   transcript: string;
   utterances: TranscriptUtterance[];
   callbackUrl: string;
+  command?: string;
+  commandId?: string;
   screenshots?: ScreenshotInput[];
 }): DemoRequest {
-  const firstWords = input.transcript.replace(/^[^:]+:\s*/, "").trim().split(/\s+/).slice(0, 6).join(" ");
+  const instruction = input.command?.trim() || input.transcript;
+  const firstWords = instruction.replace(/^[^:]+:\s*/, "").trim().split(/\s+/).slice(0, 6).join(" ");
   return demoRequestSchema.parse({
     schemaVersion: "1.0",
-    requestId: `waki-build-${input.sessionId}`,
+    requestId: `waki-build-${input.commandId || input.sessionId}`,
     conversationId: input.sessionId,
     userId: "waki-anonymous-demo",
     project: {
       name: firstWords ? `Meeting app: ${firstWords}`.slice(0, 120) : "Meeting app",
-      description: "Build a polished, focused mini-app directly from this meeting transcript.",
+      description: input.command || "Build a polished, focused mini-app directly from this meeting transcript.",
     },
     inputs: {
-      text: [{ id: `transcript-${input.sessionId}`, content: input.transcript }],
+      text: [
+        ...(input.command ? [{ id: `command-${input.commandId || input.sessionId}`, content: `Primary build instruction: ${input.command}` }] : []),
+        ...(input.transcript ? [{ id: `transcript-${input.sessionId}`, content: `Meeting transcript context:\n${input.transcript}` }] : []),
+      ],
       audio: [],
       screenshots: input.screenshots || [],
     },

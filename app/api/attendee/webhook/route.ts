@@ -1,19 +1,22 @@
 import {
   attendeeWebhookSchema,
+  chatMessageUpdateSchema,
+  parseWakiCommand,
   transcriptUpdateSchema,
   verifyWebhookSignature,
 } from "@/lib/attendee";
 import { getCloudflareEnv } from "@/lib/cloudflare";
-import { insertUtterance, recordWebhookDelivery, updateSessionState } from "@/lib/meeting-store";
+import { getMeetingSessionByBotId, insertUtterance, insertWakiChatCommand, recordWebhookDelivery, updateSessionState } from "@/lib/meeting-store";
+import { startBuildForSession } from "@/lib/start-build";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   const payload = await request.json().catch(() => null);
-  const secret = process.env.ATTENDEE_WEBHOOK_SECRET || "";
+  const { DB, ATTENDEE_WEBHOOK_SECRET } = getCloudflareEnv();
   const signature = request.headers.get("x-webhook-signature") || "";
 
-  if (!payload || !verifyWebhookSignature(payload, signature, secret)) {
+  if (!payload || !verifyWebhookSignature(payload, signature, ATTENDEE_WEBHOOK_SECRET || "")) {
     return new Response("Invalid signature", { status: 401 });
   }
 
@@ -23,7 +26,6 @@ export async function POST(request: Request) {
   }
 
   const event = parsed.data;
-  const { DB } = getCloudflareEnv();
   const isNew = await recordWebhookDelivery(DB, {
     idempotencyKey: event.idempotency_key,
     botId: event.bot_id,
@@ -42,6 +44,28 @@ export async function POST(request: Request) {
         durationMs: utterance.data.duration_ms,
         transcript: utterance.data.transcription.transcript,
       });
+    }
+  }
+
+  if (event.trigger === "chat_messages.update") {
+    const message = chatMessageUpdateSchema.safeParse(event.data);
+    const command = message.success ? parseWakiCommand(message.data.text) : null;
+    if (message.success && command) {
+      await insertWakiChatCommand(DB, event.bot_id, {
+        id: message.data.id,
+        idempotencyKey: event.idempotency_key,
+        senderName: message.data.sender_name,
+        command,
+        timestampMs: message.data.timestamp_ms,
+      });
+      const session = await getMeetingSessionByBotId(DB, event.bot_id);
+      if (session) {
+        try {
+          await startBuildForSession(DB, getCloudflareEnv(), session.id);
+        } catch (error) {
+          console.error("Could not start /waki chat build", error);
+        }
+      }
     }
   }
 

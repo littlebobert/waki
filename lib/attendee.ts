@@ -8,6 +8,19 @@ export const attendeeWebhookSchema = z.object({
   data: z.record(z.string(), z.unknown()),
 });
 
+export const chatMessageUpdateSchema = z.object({
+  id: z.union([z.string(), z.number()]).transform(String),
+  text: z.string().min(1),
+  sender_name: z.string().default("Unknown participant"),
+  sender_uuid: z.string().nullable().optional(),
+  timestamp_ms: z.number().int().nonnegative(),
+});
+
+export function parseWakiCommand(text: string) {
+  const match = text.trim().match(/^\/waki(?:\s+)([\s\S]+)$/i);
+  return match?.[1].trim() || null;
+}
+
 export const transcriptUpdateSchema = z.object({
   speaker_name: z.string().default("Unknown speaker"),
   speaker_uuid: z.string().nullable().optional(),

@@ -86,6 +86,27 @@ export async function recordWebhookDelivery(db: D1Database, delivery: { idempote
   return result.meta.changes > 0;
 }
 
+export async function insertWakiChatCommand(db: D1Database, botId: string, input: {
+  id: string;
+  idempotencyKey: string;
+  senderName: string;
+  command: string;
+  timestampMs: number;
+}) {
+  await db.prepare(
+    `INSERT OR IGNORE INTO waki_chat_commands
+      (id, session_id, idempotency_key, sender_name, command, timestamp_ms)
+     SELECT ?, id, ?, ?, ?, ? FROM meeting_sessions WHERE attendee_bot_id = ?`,
+  ).bind(input.id, input.idempotencyKey, input.senderName, input.command, input.timestampMs, botId).run();
+}
+
+export async function getLatestWakiChatCommand(db: D1Database, sessionId: string) {
+  return db.prepare(
+    `SELECT id, sender_name AS senderName, command, timestamp_ms AS timestampMs
+     FROM waki_chat_commands WHERE session_id = ? ORDER BY timestamp_ms DESC LIMIT 1`,
+  ).bind(sessionId).first<{ id: string; senderName: string; command: string; timestampMs: number }>();
+}
+
 export async function insertUtterance(db: D1Database, botId: string, idempotencyKey: string, utterance: TranscriptUtterance) {
   await db.prepare(
     `INSERT OR IGNORE INTO transcript_utterances
@@ -100,6 +121,14 @@ export async function insertUtterance(db: D1Database, botId: string, idempotency
     utterance.transcript,
     botId,
   ).run();
+}
+
+export async function getMeetingSessionByBotId(db: D1Database, botId: string) {
+  const row = await db.prepare(
+    `SELECT id, attendee_bot_id, meeting_url, bot_state, transcription_state, error_message, created_at, updated_at
+     FROM meeting_sessions WHERE attendee_bot_id = ?`,
+  ).bind(botId).first<SessionRow>();
+  return row ? mapSession(row) : null;
 }
 
 export async function getMeetingSession(db: D1Database, sessionId: string) {

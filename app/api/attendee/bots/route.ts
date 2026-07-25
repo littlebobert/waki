@@ -50,7 +50,7 @@ export async function POST(request: Request) {
         webhooks: [
           {
             url: publicWebhookUrl(request.url),
-            triggers: ["bot.state_change", "transcript.update"],
+            triggers: ["bot.state_change", "transcript.update", "chat_messages.update"],
           },
         ],
       }),
