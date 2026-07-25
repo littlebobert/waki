@@ -34,7 +34,9 @@ export async function POST(request: Request) {
         bot_name: "Waki",
         deduplication_key: sessionId,
         transcription_settings: {
-          openai: {},
+          openai: {
+            model: "gpt-4o-transcribe",
+          },
         },
         webhooks: [
           {
@@ -47,8 +49,13 @@ export async function POST(request: Request) {
 
     const data = await response.json().catch(() => null);
     if (!response.ok || typeof data?.id !== "string") {
-      const message = data?.detail || data?.error || `Attendee returned ${response.status}`;
-      throw new Error(typeof message === "string" ? message : "Attendee could not create the bot.");
+      const providerMessage = data?.detail || data?.error || data;
+      const message = typeof providerMessage === "string"
+        ? providerMessage
+        : providerMessage
+          ? JSON.stringify(providerMessage)
+          : `Attendee returned ${response.status}`;
+      throw new Error(message);
     }
 
     await attachAttendeeBot(DB, sessionId, {
