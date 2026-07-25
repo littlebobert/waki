@@ -8,6 +8,12 @@ export const actionItemSchema = z.object({
   done: z.boolean(),
 });
 
+const acceptanceCriterionSchema = z.object({
+  id: z.string(),
+  criterion: z.string(),
+  verification: z.enum(["build", "playwright", "manual"]),
+});
+
 export const artifactSchema = z.object({
   title: z.string(),
   subtitle: z.string(),
@@ -17,7 +23,29 @@ export const artifactSchema = z.object({
   actions: z.array(actionItemSchema).min(1).max(8),
   decisions: z.array(z.object({ title: z.string(), detail: z.string() })).min(1).max(5),
   risks: z.array(z.string()).max(5),
+  proposals: z.array(z.object({ title: z.string(), status: z.enum(["proposed", "accepted", "rejected", "unresolved"]) })).max(8),
+  constraints: z.array(z.string()).max(8),
+  acceptanceCriteria: z.array(acceptanceCriterionSchema).min(1).max(10),
+  relevantFrameIds: z.array(z.string()).max(12),
 });
+
+export const evidenceMapSchema = z.object({
+  topics: z.array(z.object({
+    title: z.string(),
+    transcriptEvidence: z.array(z.string()),
+    relevantFrameIds: z.array(z.string()),
+  })).min(1).max(12),
+  proposals: z.array(z.object({
+    title: z.string(),
+    status: z.enum(["proposed", "accepted", "rejected", "unresolved"]),
+    evidence: z.string(),
+  })).max(12),
+  decisions: z.array(z.object({ title: z.string(), evidence: z.string() })).max(10),
+  constraints: z.array(z.object({ constraint: z.string(), evidence: z.string() })).max(10),
+  frameSelectionInsufficient: z.boolean(),
+});
+
+export type EvidenceMap = z.infer<typeof evidenceMapSchema>;
 
 export type Artifact = z.infer<typeof artifactSchema>;
 
@@ -52,6 +80,17 @@ export const sampleArtifact: Artifact = {
     { title: "Use activation speed as north star", detail: "Measure whether teams create a first project within ten minutes." },
   ],
   risks: ["Onboarding remains the critical path", "Activation analytics are not instrumented yet"],
+  proposals: [
+    { title: "Limit beta enrollment to 50 teams", status: "accepted" },
+    { title: "Use time-to-first-project as the north-star metric", status: "accepted" },
+  ],
+  constraints: ["Support capacity limits the beta to 50 teams", "Activation must be measurable within ten minutes"],
+  acceptanceCriteria: [
+    { id: "ac1", criterion: "Production build completes without errors", verification: "build" },
+    { id: "ac2", criterion: "A user can complete onboarding and create a first project", verification: "playwright" },
+    { id: "ac3", criterion: "Time-to-first-project analytics event is recorded", verification: "playwright" },
+  ],
+  relevantFrameIds: [],
 };
 
 export function generateDemoArtifact(transcript: string): Artifact {

@@ -50,8 +50,11 @@ const copy = {
     done: "done",
     decisions: "Decisions",
     watch: "Watch closely",
+    constraints: "Product constraints",
+    acceptance: "Acceptance checks",
+    verifiedBy: "Verify with",
     finding: "Finding the shape in your conversation",
-    extracting: "Extracting commitments, decisions, and momentum…",
+    extracting: "Pass 1: grounding evidence · Pass 2: shaping AppSpec…",
     footer: "Waki sits beside the conversation, never in front of it.",
     locale: "Interface language",
     requestError: "Could not shape this meeting yet.",
@@ -87,8 +90,11 @@ const copy = {
     done: "完了",
     decisions: "決定事項",
     watch: "要注意",
+    constraints: "プロダクト制約",
+    acceptance: "受け入れ基準",
+    verifiedBy: "検証方法",
     finding: "会話の中からかたちを見つけています",
-    extracting: "担当、決定事項、進捗を整理しています…",
+    extracting: "パス1：根拠を整理 · パス2：AppSpecを生成…",
     footer: "Wakiは会話の前ではなく、そばにいます。",
     locale: "表示言語",
     requestError: "この会話をまだうまくかたちにできませんでした。",
@@ -266,6 +272,19 @@ export function MeetingStudio() {
                   </button>
                 ))}
               </div>
+
+              <div className="spec-section">
+                <div className="subsection-heading"><h3>{t.acceptance}</h3></div>
+                <div className="acceptance-list">
+                  {artifact.acceptanceCriteria.map((item) => (
+                    <div className="acceptance-item" key={item.id}>
+                      <Check size={13} />
+                      <span>{item.criterion}</span>
+                      <small>{t.verifiedBy} {item.verification}</small>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div className="insight-column">
@@ -280,6 +299,12 @@ export function MeetingStudio() {
                 <div className="risk-card">
                   <span>{t.watch}</span>
                   {artifact.risks.map((risk) => <p key={risk}>{risk}</p>)}
+                </div>
+              )}
+              {artifact.constraints.length > 0 && (
+                <div className="constraint-card">
+                  <span>{t.constraints}</span>
+                  {artifact.constraints.map((constraint) => <p key={constraint}>{constraint}</p>)}
                 </div>
               )}
             </div>

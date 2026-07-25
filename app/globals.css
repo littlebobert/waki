@@ -100,9 +100,20 @@ textarea:focus { box-shadow: inset 0 0 0 1px #a9b1a4; }
 .decision > span { color: var(--persimmon); font: 700 9px Manrope, sans-serif; }
 .decision strong { display: block; font-size: 10px; }
 .decision p { margin: 4px 0 0; color: #8b8f87; font-size: 9px; line-height: 1.45; }
-.risk-card { margin-top: 13px; padding: 12px; border-radius: 10px; background: #f3eae2; }
-.risk-card > span { color: #a24d34; text-transform: uppercase; letter-spacing: .1em; font-size: 8px; font-weight: 700; }
-.risk-card p { margin: 6px 0 0; color: #735d54; font-size: 9px; }
+.risk-card, .constraint-card { margin-top: 13px; padding: 12px; border-radius: 10px; }
+.risk-card { background: #f3eae2; }
+.constraint-card { background: var(--soft-green); }
+.risk-card > span, .constraint-card > span { text-transform: uppercase; letter-spacing: .1em; font-size: 8px; font-weight: 700; }
+.risk-card > span { color: #a24d34; }
+.constraint-card > span { color: var(--moss); }
+.risk-card p, .constraint-card p { margin: 6px 0 0; font-size: 9px; line-height: 1.45; }
+.risk-card p { color: #735d54; }
+.constraint-card p { color: #5f6c5b; }
+.spec-section { margin-top: 20px; }
+.acceptance-list { display: grid; gap: 6px; }
+.acceptance-item { display: grid; grid-template-columns: 18px 1fr; gap: 3px 6px; align-items: center; padding: 9px 10px; border: 1px solid #e5e2da; border-radius: 9px; color: var(--moss); }
+.acceptance-item span { color: var(--ink); font-size: 10px; font-weight: 600; }
+.acceptance-item small { grid-column: 2; color: #969992; font-size: 8px; text-transform: uppercase; letter-spacing: .05em; }
 .generation-overlay { position: absolute; inset: 0; z-index: 4; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--ink); background: #fbfaf6e8; backdrop-filter: blur(8px); }
 .generation-overlay strong { margin-top: 18px; font: 700 16px Manrope, sans-serif; }
 .generation-overlay p { margin: 7px 0; color: var(--muted); font-size: 11px; }
