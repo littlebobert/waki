@@ -90,7 +90,7 @@
     .flow-layout { flex: 1; display: flex; flex-direction: column; justify-content: center; }
     .flow-copy { display: flex; align-items: end; justify-content: space-between; gap: 48px; }
     .flow-copy p { max-width: 470px; padding-bottom: 7px; font-size: 22px; line-height: 1.45; }
-    .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 64px; }
+    .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 64px; }
     .step { position: relative; min-height: 300px; padding: 30px; border: 1px solid var(--line); border-radius: 20px; background: var(--panel); }
     .step::after { content: "→"; position: absolute; right: -28px; top: 50%; z-index: 2; color: var(--persimmon); font-size: 30px; font-weight: 700; }
     .step:last-child::after { display: none; }
@@ -100,6 +100,18 @@
     .proof { display: flex; justify-content: center; gap: 34px; margin-top: 34px; color: var(--muted); font-size: 14px; }
     .proof span { display: flex; align-items: center; gap: 8px; }
     .proof i { width: 8px; height: 8px; border-radius: 50%; background: var(--moss); }
+
+    .sponsor-powered { color: var(--moss-dark); font-weight: 700; }
+    .sponsor-powered strong { color: var(--persimmon); font-weight: 700; }
+    .sponsor-name { display: block; color: var(--moss-dark); font: 700 clamp(25px, 2.4vw, 38px) Manrope, sans-serif; letter-spacing: -.04em; }
+    .sponsor-role { display: block; margin-top: 8px; color: var(--persimmon); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .sponsor-layout { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .sponsor-head { display: flex; align-items: end; justify-content: space-between; gap: 48px; }
+    .sponsor-head p { max-width: 450px; padding-bottom: 8px; font-size: 20px; line-height: 1.45; }
+    .sponsor-list { margin-top: 44px; border-top: 1px solid var(--line); }
+    .sponsor-row { display: grid; grid-template-columns: minmax(220px, .55fr) 1.45fr; gap: 44px; align-items: center; padding: 24px 0; border-bottom: 1px solid var(--line); }
+    .sponsor-row p { color: var(--ink); font-size: clamp(16px, 1.3vw, 20px); line-height: 1.45; }
+    .sponsor-row code { padding: 2px 6px; border-radius: 5px; color: var(--moss-dark); background: var(--soft-green); font: 600 .9em "DM Sans", sans-serif; }
 
     .controls { position: fixed; right: 28px; bottom: 24px; z-index: 20; display: flex; align-items: center; gap: 8px; }
     .controls button { width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 11px; color: var(--ink); background: var(--panel); cursor: pointer; }
@@ -116,7 +128,8 @@
       .flow { grid-template-columns: repeat(2, 1fr); margin-top: 30px; }
       .step { min-height: 210px; }
       .step::after { display: none; }
-      .flow-copy { align-items: start; flex-direction: column; }
+      .flow-copy, .sponsor-head { align-items: start; flex-direction: column; }
+      .sponsor-row { grid-template-columns: 1fr; gap: 10px; padding: 17px 0; }
     }
 
     @media print {
@@ -133,20 +146,20 @@
       <div class="slide-inner">
         <div class="slide-top">
           <div class="brand"><span class="brand-mark">脇</span>Waki</div>
-          <span class="slide-no">01 / 04</span>
+          <span class="slide-no">01 / 05</span>
         </div>
         <div class="title-content">
           <span class="eyebrow">Ideas, made present.</span>
           <h1>Turn the meeting into the <span class="accent">thing itself.</span></h1>
           <p>A quiet AI companion that listens, looks, and builds useful software while everyone is still in the room.</p>
         </div>
-        <div class="title-footer"><span>Tokyo · 2026</span><span>Meeting-native app generation</span></div>
+        <div class="title-footer"><span>Tokyo · 2026</span><span class="sponsor-powered">Powered by <strong>QwenCloud · Qoder · Daytona</strong></span></div>
       </div>
     </section>
 
     <section class="slide" aria-label="The problem">
       <div class="slide-inner">
-        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">02 / 04</span></div>
+        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">02 / 05</span></div>
         <div class="problem-layout">
           <div class="problem-copy">
             <span class="eyebrow">The problem</span>
@@ -166,7 +179,7 @@
 
     <section class="slide" aria-label="The solution">
       <div class="slide-inner">
-        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">03 / 04</span></div>
+        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">03 / 05</span></div>
         <div class="solution-layout">
           <div class="solution-copy">
             <span class="eyebrow">The solution</span>
@@ -192,21 +205,46 @@
       </div>
     </section>
 
-    <section class="slide" aria-label="How it works">
+    <section class="slide" aria-label="Sponsor-powered architecture">
       <div class="slide-inner">
-        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">04 / 04</span></div>
+        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">04 / 05</span></div>
         <div class="flow-layout">
           <div class="flow-copy">
-            <div><span class="eyebrow">How it works</span><h2>From room intent to <span class="accent">working interface.</span></h2></div>
-            <p>Multimodal understanding, grounded generation, deterministic verification.</p>
+            <div><span class="eyebrow">Hackathon sponsor architecture</span><h2>Three tools. One <span class="accent">safe handoff.</span></h2></div>
+            <p>Each sponsor owns a narrow stage, with a validated <code>ProductSpec</code> as the trust boundary.</p>
           </div>
           <div class="flow">
-            <article class="step"><span class="step-no">01</span><div class="step-icon">⌁</div><h3>Join</h3><p>Waki enters the Google Meet.</p></article>
-            <article class="step"><span class="step-no">02</span><div class="step-icon">◉</div><h3>Listen + look</h3><p>Transcript and sampled screen frames.</p></article>
-            <article class="step"><span class="step-no">03</span><div class="step-icon">◇</div><h3>Understand</h3><p>Qwen grounds intent in evidence.</p></article>
-            <article class="step"><span class="step-no">04</span><div class="step-icon">▦</div><h3>Build</h3><p>An interactive artifact appears.</p></article>
+            <article class="step"><span class="step-no">01 · SPONSOR</span><div class="step-icon">◇</div><span class="sponsor-name">QwenCloud</span><span class="sponsor-role">Understand</span><p>Reads meeting text and screenshots, then returns a strict, schema-validated <code>ProductSpec</code>.</p></article>
+            <article class="step"><span class="step-no">02 · SPONSOR</span><div class="step-icon">⌘</div><span class="sponsor-name">Qoder</span><span class="sponsor-role">Build</span><p>Turns only the validated spec into a React/Vite frontend using constrained file tools.</p></article>
+            <article class="step"><span class="step-no">03 · SPONSOR</span><div class="step-icon">▦</div><span class="sponsor-name">Daytona</span><span class="sponsor-role">Verify + preview</span><p>Builds and tests in an isolated sandbox, then returns a signed, expiring preview URL.</p></article>
           </div>
-          <div class="proof"><span><i></i>Attendee live capture</span><span><i></i>Qwen multimodal analysis</span><span><i></i>Build + Playwright verification</span></div>
+          <div class="proof"><span><i></i>Strict schema boundary</span><span><i></i>No shell or web access for Qoder</span><span><i></i>Bounded sandbox lifetime</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" aria-label="Hackathon sponsor spotlight">
+      <div class="slide-inner">
+        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">05 / 05</span></div>
+        <div class="sponsor-layout">
+          <div class="sponsor-head">
+            <div><span class="eyebrow">Built with our hackathon sponsors</span><h2>The right tool at <span class="moss">every boundary.</span></h2></div>
+            <p>Waki orchestrates the pipeline while each sponsor provides a focused, auditable capability.</p>
+          </div>
+          <div class="sponsor-list">
+            <article class="sponsor-row">
+              <div><span class="sponsor-name">QwenCloud</span><span class="sponsor-role">Evidence → ProductSpec</span></div>
+              <p>Reads meeting text and screenshots—including the reference team image—and returns a strict, schema-validated <code>ProductSpec</code>. It never generates or executes application code.</p>
+            </article>
+            <article class="sponsor-row">
+              <div><span class="sponsor-name">Qoder</span><span class="sponsor-role">ProductSpec → Frontend</span></div>
+              <p>Receives only the validated spec and seeded React/Vite project. With shell and web access disabled, it edits only the frontend; Waki owns and protects generated FastAPI files.</p>
+            </article>
+            <article class="sponsor-row">
+              <div><span class="sponsor-name">Daytona</span><span class="sponsor-role">Build → Signed preview</span></div>
+              <p>Runs the isolated, time-bounded sandbox: installs Node and Python dependencies, builds React, compiles and smoke-tests FastAPI, starts the preview, and returns a signed expiring URL.</p>
+            </article>
+          </div>
         </div>
       </div>
     </section>
