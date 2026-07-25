@@ -60,15 +60,17 @@ export class WakiCoderError extends Error {
   }
 }
 
-function config() {
-  const baseUrl = process.env.WAKI_CODER_BASE_URL?.replace(/\/$/, "");
-  const token = process.env.WAKI_CODER_API_TOKEN;
+export type WakiCoderConfig = { baseUrl: string; token: string };
+
+function config(input: WakiCoderConfig) {
+  const baseUrl = input.baseUrl?.replace(/\/$/, "");
+  const token = input.token;
   if (!baseUrl || !token) throw new WakiCoderError("Waki Coder is not configured.", 503, "NOT_CONFIGURED");
   return { baseUrl, token };
 }
 
-async function coderFetch(path: string, init?: RequestInit) {
-  const { baseUrl, token } = config();
+async function coderFetch(configuration: WakiCoderConfig, path: string, init?: RequestInit) {
+  const { baseUrl, token } = config(configuration);
   const response = await fetch(`${baseUrl}${path}`, {
     ...init,
     headers: { authorization: `Bearer ${token}`, "content-type": "application/json", ...init?.headers },
@@ -80,13 +82,13 @@ async function coderFetch(path: string, init?: RequestInit) {
   return body;
 }
 
-export async function createCoderJob(request: DemoRequest) {
-  const body = await coderFetch("/v1/demo-jobs", { method: "POST", body: JSON.stringify(demoRequestSchema.parse(request)) });
+export async function createCoderJob(configuration: WakiCoderConfig, request: DemoRequest) {
+  const body = await coderFetch(configuration, "/v1/demo-jobs", { method: "POST", body: JSON.stringify(demoRequestSchema.parse(request)) });
   return wakiCoderJobSchema.parse(body);
 }
 
-export async function getCoderJob(jobId: string) {
-  const body = await coderFetch(`/v1/demo-jobs/${encodeURIComponent(jobId)}`, { cache: "no-store" });
+export async function getCoderJob(configuration: WakiCoderConfig, jobId: string) {
+  const body = await coderFetch(configuration, `/v1/demo-jobs/${encodeURIComponent(jobId)}`, { cache: "no-store" });
   return wakiCoderJobSchema.parse(body);
 }
 

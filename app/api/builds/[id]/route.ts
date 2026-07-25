@@ -6,13 +6,13 @@ export const runtime = "nodejs";
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
-  const { DB } = getCloudflareEnv();
+  const { DB, WAKI_CODER_BASE_URL, WAKI_CODER_API_TOKEN } = getCloudflareEnv();
   let build = await getBuildJob(DB, id);
   if (!build) return Response.json({ error: "Build not found." }, { status: 404 });
 
   if (build.status !== "PREVIEW_READY" && build.status !== "FAILED") {
     try {
-      const remote = await getCoderJob(build.coderJobId);
+      const remote = await getCoderJob({ baseUrl: WAKI_CODER_BASE_URL, token: WAKI_CODER_API_TOKEN }, build.coderJobId);
       await updateBuildJob(DB, build.coderJobId, remote);
       build = await getBuildJob(DB, id) || build;
     } catch (error) {

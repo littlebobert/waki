@@ -9,7 +9,8 @@ export async function POST(request: Request) {
   const timestamp = request.headers.get("x-waki-timestamp") || "";
   const signature = request.headers.get("x-waki-signature") || "";
   const delivery = request.headers.get("x-waki-delivery") || "";
-  const secret = process.env.WAKI_CODER_WEBHOOK_SECRET || "";
+  const { DB, WAKI_CODER_WEBHOOK_SECRET } = getCloudflareEnv();
+  const secret = WAKI_CODER_WEBHOOK_SECRET || "";
   if (!delivery || !verifyCoderWebhook({ rawBody, timestamp, signature, secret })) {
     return new Response("Invalid callback", { status: 401 });
   }
@@ -19,7 +20,6 @@ export async function POST(request: Request) {
   })();
   const parsed = coderWebhookSchema.safeParse(payload);
   if (!parsed.success) return new Response("Invalid payload", { status: 400 });
-  const { DB } = getCloudflareEnv();
   const event = parsed.data;
   const isNew = await recordBuildDelivery(DB, delivery, event.jobId, event.event);
   if (!isNew) return Response.json({ received: true, duplicate: true });

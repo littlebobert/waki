@@ -30,7 +30,7 @@ describe("Waki Coder integration", () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ jobId: "job_1", status: "ACCEPTED", idempotentReplay: false }), { status: 202, headers: { "content-type": "application/json" } }));
     vi.stubGlobal("fetch", fetchMock);
     const request = buildDemoRequest({ sessionId: "s1", transcript: "A: Build a tracker", utterances: [], callbackUrl: "https://waki.example.com/api/waki-coder/webhook" });
-    await createCoderJob(request);
+    await createCoderJob({ baseUrl: "https://coder.example.com", token: "secret-token" }, request);
     expect(fetchMock).toHaveBeenCalledWith("https://coder.example.com/v1/demo-jobs", expect.objectContaining({ headers: expect.objectContaining({ authorization: "Bearer secret-token" }) }));
   });
 
