@@ -8,13 +8,10 @@ import {
   LayoutDashboard,
   Link2,
   Mic2,
-  Play,
-  RotateCcw,
   Sparkles,
 } from "lucide-react";
-import { Artifact, sampleArtifact, sampleTranscript } from "@/lib/artifact";
+import { sampleArtifact, sampleTranscript } from "@/lib/artifact";
 
-type GenerationMode = "live" | "demo" | "fallback";
 type Locale = "en" | "ja";
 type LiveSession = {
   session: { botState: string; errorMessage: string | null };
@@ -38,13 +35,9 @@ const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD
 const copy = {
   en: {
     home: "Waki home",
-    profile: "Open profile",
     canvas: "Meeting canvas",
     headline: "Ideas, made present.",
     intro: "Waki listens from the side, then quietly turns the room's intent into something everyone can use.",
-    reset: "Reset demo",
-    generating: "Shaping the room…",
-    build: "Generate dashboard",
     source: "Example input",
     conversation: "Example conversation",
     listening: "Example",
@@ -79,18 +72,13 @@ const copy = {
     extracting: "Pass 1: grounding evidence · Pass 2: shaping AppSpec…",
     footer: "Waki sits beside the conversation, never in front of it.",
     locale: "Interface language",
-    requestError: "Could not shape this meeting yet.",
     genericError: "Something went wrong.",
   },
   ja: {
     home: "Waki ホーム",
-    profile: "プロフィールを開く",
     canvas: "ミーティングキャンバス",
     headline: "アイデアを、かたちに。",
     intro: "Wakiは会話のそばで耳を傾け、みんなの想いを静かに使えるかたちへ変えていきます。",
-    reset: "デモをリセット",
-    generating: "会話をかたちにしています…",
-    build: "ダッシュボードを生成",
     source: "入力例",
     conversation: "会話の例",
     listening: "サンプル",
@@ -125,7 +113,6 @@ const copy = {
     extracting: "パス1：根拠を整理 · パス2：AppSpecを生成…",
     footer: "Wakiは会話の前ではなく、そばにいます。",
     locale: "表示言語",
-    requestError: "この会話をまだうまくかたちにできませんでした。",
     genericError: "問題が発生しました。",
   },
 } as const;
@@ -133,9 +120,7 @@ const copy = {
 export function MeetingStudio() {
   const [locale, setLocale] = useState<Locale>("en");
   const [transcript, setTranscript] = useState(sampleTranscript);
-  const [artifact, setArtifact] = useState<Artifact>(sampleArtifact);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [mode, setMode] = useState<GenerationMode>("demo");
+  const artifact = sampleArtifact;
   const [error, setError] = useState("");
   const [meetingUrl, setMeetingUrl] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -207,36 +192,6 @@ export function MeetingStudio() {
     }
   }
 
-  async function generate() {
-    setIsGenerating(true);
-    setError("");
-    try {
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transcript }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || t.requestError);
-      setArtifact(data.artifact);
-      setMode(data.mode);
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : t.genericError);
-    } finally {
-      setIsGenerating(false);
-    }
-  }
-
-  function resetDemo() {
-    setTranscript(sampleTranscript);
-    setMeetingUrl("");
-    setSessionId(null);
-    setBotState("idle");
-    setSelectedRegion("All");
-    setPeriod("Monthly");
-    setError("");
-  }
-
   const visibleSales = selectedRegion === "All"
     ? salesRows
     : salesRows.filter((row) => row.region === selectedRegion);
@@ -262,7 +217,6 @@ export function MeetingStudio() {
             <button className={locale === "en" ? "active" : ""} onClick={() => changeLocale("en")} aria-pressed={locale === "en"}>EN</button>
             <button className={locale === "ja" ? "active" : ""} onClick={() => changeLocale("ja")} aria-pressed={locale === "ja"}>日本語</button>
           </div>
-          <button className="avatar" aria-label={t.profile}>JM</button>
         </div>
       </header>
 
@@ -272,16 +226,36 @@ export function MeetingStudio() {
           <h1>{t.headline}</h1>
           <p>{t.intro}</p>
         </div>
-        <div className="hero-actions">
-          <button className="secondary-button" onClick={resetDemo}>
-            <RotateCcw size={16} /> {t.reset}
-          </button>
-          <button className="primary-button" onClick={generate} disabled={isGenerating}>
-            {isGenerating ? <span className="spinner" /> : <Play size={16} fill="currentColor" />}
-            {isGenerating ? t.generating : t.build}
-          </button>
+      </section>
+
+      <section className="live-meeting-section" aria-labelledby="live-meeting-title">
+        <div className="meeting-join-card">
+          <div className="meeting-join-heading">
+            <span className="live-input-label">Live input</span>
+            <h2 id="live-meeting-title">{t.joinTitle}</h2>
+            <p>{t.joinHelp}</p>
+          </div>
+          <div className="meeting-url-row">
+            <span><Link2 size={15} /></span>
+            <input
+              id="meeting-url"
+              type="url"
+              value={meetingUrl}
+              onChange={(event) => setMeetingUrl(event.target.value)}
+              placeholder={t.meetingUrl}
+              disabled={isJoining}
+            />
+            <button onClick={joinMeeting} disabled={isJoining || !meetingUrl.trim()}>
+              {isJoining ? <span className="spinner" /> : <Mic2 size={14} />}
+              {isJoining ? t.joining : t.join}
+            </button>
+          </div>
+          {sessionId && <small><span className="live-dot" /> {t.botState}: {botState.replaceAll("_", " ")}</small>}
+          {error && <p className="error-message">{error}</p>}
         </div>
       </section>
+
+      <div className="example-divider"><span>Example</span></div>
 
       <section className="studio-grid">
         <aside className="conversation-panel panel">
@@ -292,33 +266,6 @@ export function MeetingStudio() {
             </div>
             <div className="listening-pill"><Mic2 size={13} /> {t.listening}</div>
           </div>
-
-          <div className="meeting-join-card">
-            <div className="meeting-join-heading">
-              <span className="live-input-label">Live input</span>
-              <label htmlFor="meeting-url">{t.joinTitle}</label>
-              <p>{t.joinHelp}</p>
-            </div>
-            <div className="meeting-url-row">
-              <span><Link2 size={15} /></span>
-              <input
-                id="meeting-url"
-                type="url"
-                value={meetingUrl}
-                onChange={(event) => setMeetingUrl(event.target.value)}
-                placeholder={t.meetingUrl}
-                disabled={isJoining}
-              />
-              <button onClick={joinMeeting} disabled={isJoining || !meetingUrl.trim()}>
-                {isJoining ? <span className="spinner" /> : <Mic2 size={14} />}
-                {isJoining ? t.joining : t.join}
-              </button>
-            </div>
-            {sessionId && <small><span className="live-dot" /> {t.botState}: {botState.replaceAll("_", " ")}</small>}
-          </div>
-
-          <div className="example-divider"><span>Example shown below</span></div>
-
           <div className="screen-source">
             <div className="screen-source-head">
               <span className="capture-icon"><LayoutDashboard size={16} /></span>
@@ -348,13 +295,12 @@ export function MeetingStudio() {
             <span><Clock3 size={13} /> {t.elapsed}</span>
             <span>{transcript.length.toLocaleString(locale === "ja" ? "ja-JP" : "en-US")} {t.characters}</span>
           </div>
-          {error && <p className="error-message">{error}</p>}
         </aside>
 
-        <section className={`artifact-panel panel ${isGenerating ? "is-generating" : ""}`}>
+        <section className="artifact-panel panel">
           <div className="artifact-topline">
             <div className="artifact-badge"><span>脇</span> {t.madeThis}</div>
-            <div className="mode-badge">{mode === "live" ? t.aiGenerated : mode === "fallback" ? t.safeFallback : t.demoMode}</div>
+            <div className="mode-badge">{t.demoMode}</div>
           </div>
 
           <div className="artifact-heading">
@@ -444,14 +390,6 @@ export function MeetingStudio() {
               </div>
             </div>
           </div>
-
-          {isGenerating && (
-            <div className="generation-overlay">
-              <span className="waki-pulse">脇</span>
-              <strong>{t.finding}</strong>
-              <p>{t.extracting}</p>
-            </div>
-          )}
         </section>
       </section>
 
