@@ -4,6 +4,10 @@
   "name": "waki",
   "compatibility_date": "2026-07-25",
   "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "WAKI_PUBLIC_URL": "https://waki.justin-garcia.workers.dev",
+    "WAKI_CODER_BASE_URL": "https://waki-coder-production.up.railway.app"
+  },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"

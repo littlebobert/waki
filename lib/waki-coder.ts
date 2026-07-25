@@ -65,7 +65,8 @@ export type WakiCoderConfig = { baseUrl: string; token: string };
 function config(input: WakiCoderConfig) {
   const baseUrl = input.baseUrl?.replace(/\/$/, "");
   const token = input.token;
-  if (!baseUrl || !token) throw new WakiCoderError("Waki Coder is not configured.", 503, "NOT_CONFIGURED");
+  if (!baseUrl) throw new WakiCoderError("Waki Coder service URL is not configured.", 503, "BASE_URL_NOT_CONFIGURED");
+  if (!token) throw new WakiCoderError("Waki Coder API token is not configured.", 503, "API_TOKEN_NOT_CONFIGURED");
   return { baseUrl, token };
 }
 
