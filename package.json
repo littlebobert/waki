@@ -8,6 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
     "cf:build": "opennextjs-cloudflare build",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
@@ -22,12 +24,15 @@
     "zod": "latest"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260724.1",
+    "@playwright/test": "^1.62.0",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "eslint": "latest",
     "eslint-config-next": "latest",
     "typescript": "latest",
+    "vitest": "^4.1.10",
     "wrangler": "^4.114.0"
   }
 }

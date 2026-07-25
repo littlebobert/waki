@@ -15,7 +15,7 @@
 * { box-sizing: border-box; }
 html { background: var(--paper); }
 body { margin: 0; color: var(--ink); background: var(--paper); font-family: "DM Sans", sans-serif; }
-button, textarea { font: inherit; }
+button, input, textarea { font: inherit; }
 button { color: inherit; }
 
 .app-shell { min-height: 100vh; max-width: 1540px; margin: 0 auto; padding: 0 38px; }
@@ -51,7 +51,17 @@ button { color: inherit; }
 .panel-header h2, .artifact-heading h2 { margin: 5px 0 0; font-family: Manrope, sans-serif; letter-spacing: -.035em; }
 .panel-header h2 { font-size: 22px; }
 .listening-pill, .mode-badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 6px 9px; color: var(--moss); background: var(--soft-green); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
-.capture-note { display: grid; grid-template-columns: auto 1fr auto; gap: 11px; align-items: center; margin: 23px 0; padding: 12px; border: 1px dashed #c9c7bd; border-radius: 12px; color: #858980; background: #f6f4ee; }
+.meeting-join-card { margin-top: 22px; }
+.meeting-join-card > label { display: block; margin-bottom: 8px; color: #555a52; font-size: 11px; font-weight: 700; }
+.meeting-url-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 6px 6px 11px; border: 1px solid var(--line); border-radius: 12px; background: #f1efe8; }
+.meeting-url-row > span { display: grid; color: var(--moss); }
+.meeting-url-row input { min-width: 0; border: 0; outline: 0; color: var(--ink); background: transparent; font-size: 11px; }
+.meeting-url-row input::placeholder { color: #a2a59e; }
+.meeting-url-row button { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 11px; border: 0; border-radius: 8px; color: white; background: var(--moss-dark); font-size: 10px; font-weight: 700; cursor: pointer; }
+.meeting-url-row button:disabled { opacity: .6; cursor: not-allowed; }
+.meeting-join-card > small { display: flex; align-items: center; gap: 7px; margin-top: 8px; color: var(--muted); font-size: 9px; text-transform: capitalize; }
+.meeting-join-card .live-dot { width: 6px; height: 6px; }
+.capture-note { display: grid; grid-template-columns: auto 1fr auto; gap: 11px; align-items: center; margin: 14px 0 23px; padding: 12px; border: 1px dashed #c9c7bd; border-radius: 12px; color: #858980; background: #f6f4ee; }
 .capture-icon { width: 32px; height: 32px; display: grid; place-items: center; color: var(--moss); background: var(--soft-green); border-radius: 9px; }
 .capture-note strong, .capture-note span { display: block; }
 .capture-note strong { color: #555a52; font-size: 12px; margin-bottom: 2px; }

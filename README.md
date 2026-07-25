@@ -35,20 +35,52 @@ The generation route uses Qwen as the primary multimodal product analyst in two 
 
 LLM judges may add qualitative product feedback, but they are advisory. A successful production build and Playwright acceptance tests remain the deterministic release gates; generated acceptance criteria label the expected verification method accordingly.
 
+## Hosted Attendee live transcription
+
+Waki can send an Attendee bot into a Google Meet, Zoom, or Microsoft Teams meeting and receive real-time speaker-attributed transcription.
+
+1. In Attendee Hosted, open **Settings → Credentials**, add an OpenAI API key, and enable OpenAI transcription. The key stays in Attendee; Waki never receives it. OpenAI automatic language handling is used for mixed English/Japanese meetings.
+2. Open **Settings → Webhooks** and copy the project webhook secret. Waki attaches `bot.state_change` and `transcript.update` bot-level subscriptions when it creates each bot.
+3. Create the D1 database and copy its ID into `wrangler.jsonc`:
+
+```bash
+npx wrangler d1 create waki
+npx wrangler d1 migrations apply waki --remote
+```
+
+4. Configure local values in `.env.local`, and production secrets in Cloudflare:
+
+```bash
+npx wrangler secret put ATTENDEE_API_KEY
+npx wrangler secret put ATTENDEE_WEBHOOK_SECRET
+npx wrangler secret put DASHSCOPE_API_KEY
+```
+
+Set `WAKI_PUBLIC_URL` as a Cloudflare Worker variable to the deployed HTTPS origin. The resulting webhook is `https://your-origin/api/attendee/webhook`.
+
+5. Deploy, paste a meeting URL into Waki, and select **Join with Waki**. Admit the Waki participant if the meeting has a lobby. Its status and transcript should begin updating within a few seconds.
+
+For local D1-backed development, `npm run dev` uses the local Wrangler binding configured by OpenNext. Attendee cannot call localhost, so use the deployed Worker for a real webhook smoke test. Webhook deliveries can be inspected in the Attendee bot detail under **Webhooks**.
+
 ## Current vertical slice
 
-1. Paste or edit a meeting transcript.
-2. Select **Build from conversation**.
-3. Waki extracts a structured artifact through `POST /api/generate`.
-4. The artifact appears beside the source context and remains interactive.
-5. If the model or network is unavailable, the endpoint returns a safe demo artifact.
+1. Paste a meeting URL and send Waki into the call, or edit the transcript manually.
+2. Signed Attendee webhooks populate the live transcript in D1; the browser polls the session every two seconds.
+3. Select **Build from conversation**.
+4. Waki extracts a structured artifact through `POST /api/generate`.
+5. The artifact appears beside the source context and remains interactive.
+6. If Attendee, the model, or the network is unavailable, manual input and deterministic generation remain available.
 
 ## Architecture
 
 - `app/page.tsx` — meeting workspace entry point
 - `components/meeting-studio.tsx` — transcript and interactive artifact UI
 - `app/api/generate/route.ts` — structured LLM generation and fallback path
+- `app/api/attendee/` — bot creation, signed webhook ingestion, and live-session reads
+- `lib/attendee.ts` — URL validation and webhook signature verification
+- `lib/meeting-store.ts` — D1 session and transcript persistence
 - `lib/artifact.ts` — Zod contract, sample data, and deterministic generator
+- `migrations/` — D1 schema migrations
 
 ## Hackathon build order
 

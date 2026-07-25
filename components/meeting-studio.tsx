@@ -8,6 +8,7 @@ import {
   Circle,
   Clock3,
   LayoutDashboard,
+  Link2,
   Mic2,
   Play,
   RotateCcw,
@@ -18,6 +19,11 @@ import { Artifact, sampleArtifact, sampleTranscript } from "@/lib/artifact";
 
 type GenerationMode = "live" | "demo" | "fallback";
 type Locale = "en" | "ja";
+type LiveSession = {
+  session: { botState: string; errorMessage: string | null };
+  transcript: string;
+  terminal: boolean;
+};
 
 const copy = {
   en: {
@@ -34,8 +40,15 @@ const copy = {
     source: "Source",
     conversation: "Conversation",
     listening: "Listening",
+    joinTitle: "Bring Waki into the meeting",
+    meetingUrl: "Google Meet, Zoom, or Teams URL",
+    join: "Join with Waki",
+    joining: "Joining meeting…",
+    botState: "Bot state",
+    waitingTranscript: "Waki joined. Waiting for someone to speak…",
+    joinError: "Could not join this meeting.",
     screenReady: "Screen context ready",
-    screenHelp: "Connect Attendee to add shared frames here.",
+    screenHelp: "Attendee is connected for live transcript capture.",
     transcript: "Live transcript",
     elapsed: "14:32 elapsed",
     characters: "characters",
@@ -74,8 +87,15 @@ const copy = {
     source: "ソース",
     conversation: "会話",
     listening: "聞き取り中",
+    joinTitle: "Wakiをミーティングに参加させる",
+    meetingUrl: "Google Meet、Zoom、TeamsのURL",
+    join: "Wakiを参加させる",
+    joining: "ミーティングに参加中…",
+    botState: "ボットの状態",
+    waitingTranscript: "Wakiが参加しました。発言を待っています…",
+    joinError: "このミーティングに参加できませんでした。",
     screenReady: "画面共有の準備完了",
-    screenHelp: "Attendeeを接続すると共有画面を追加できます。",
+    screenHelp: "Attendeeでリアルタイム文字起こしを取得中です。",
     transcript: "リアルタイム文字起こし",
     elapsed: "経過時間 14:32",
     characters: "文字",
@@ -109,6 +129,10 @@ export function MeetingStudio() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [mode, setMode] = useState<GenerationMode>("demo");
   const [error, setError] = useState("");
+  const [meetingUrl, setMeetingUrl] = useState("");
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [botState, setBotState] = useState("idle");
+  const [isJoining, setIsJoining] = useState(false);
   const t = copy[locale];
 
   useEffect(() => {
@@ -123,6 +147,54 @@ export function MeetingStudio() {
     setLocale(nextLocale);
     document.documentElement.lang = nextLocale;
     window.localStorage.setItem("waki-locale", nextLocale);
+  }
+
+  useEffect(() => {
+    if (!sessionId) return;
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout>;
+
+    async function refreshSession() {
+      try {
+        const response = await fetch(`/api/attendee/sessions/${sessionId}`, { cache: "no-store" });
+        const data = await response.json() as LiveSession & { error?: string };
+        if (!response.ok) throw new Error(data.error || t.joinError);
+        if (stopped) return;
+        setBotState(data.session.botState);
+        if (data.transcript) setTranscript(data.transcript);
+        if (data.session.errorMessage) setError(data.session.errorMessage);
+        if (!data.terminal) timer = setTimeout(refreshSession, 2000);
+      } catch (caught) {
+        if (!stopped) setError(caught instanceof Error ? caught.message : t.genericError);
+      }
+    }
+
+    refreshSession();
+    return () => {
+      stopped = true;
+      clearTimeout(timer);
+    };
+  }, [sessionId, t.genericError, t.joinError]);
+
+  async function joinMeeting() {
+    setIsJoining(true);
+    setError("");
+    try {
+      const response = await fetch("/api/attendee/bots", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ meetingUrl }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || t.joinError);
+      setTranscript("");
+      setSessionId(data.sessionId);
+      setBotState(data.state || "joining");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : t.joinError);
+    } finally {
+      setIsJoining(false);
+    }
   }
 
   async function generate() {
@@ -159,6 +231,14 @@ export function MeetingStudio() {
     [artifact.actions],
   );
 
+  function resetDemo() {
+    setTranscript(sampleTranscript);
+    setMeetingUrl("");
+    setSessionId(null);
+    setBotState("idle");
+    setError("");
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -188,7 +268,7 @@ export function MeetingStudio() {
           <p>{t.intro}</p>
         </div>
         <div className="hero-actions">
-          <button className="secondary-button" onClick={() => setTranscript(sampleTranscript)}>
+          <button className="secondary-button" onClick={resetDemo}>
             <RotateCcw size={16} /> {t.reset}
           </button>
           <button className="primary-button" onClick={generate} disabled={isGenerating}>
@@ -208,6 +288,26 @@ export function MeetingStudio() {
             <div className="listening-pill"><Mic2 size={13} /> {t.listening}</div>
           </div>
 
+          <div className="meeting-join-card">
+            <label htmlFor="meeting-url">{t.joinTitle}</label>
+            <div className="meeting-url-row">
+              <span><Link2 size={15} /></span>
+              <input
+                id="meeting-url"
+                type="url"
+                value={meetingUrl}
+                onChange={(event) => setMeetingUrl(event.target.value)}
+                placeholder={t.meetingUrl}
+                disabled={isJoining}
+              />
+              <button onClick={joinMeeting} disabled={isJoining || !meetingUrl.trim()}>
+                {isJoining ? <span className="spinner" /> : <Mic2 size={14} />}
+                {isJoining ? t.joining : t.join}
+              </button>
+            </div>
+            {sessionId && <small><span className="live-dot" /> {t.botState}: {botState.replaceAll("_", " ")}</small>}
+          </div>
+
           <div className="capture-note">
             <span className="capture-icon"><LayoutDashboard size={16} /></span>
             <div><strong>{t.screenReady}</strong><span>{t.screenHelp}</span></div>
@@ -219,6 +319,7 @@ export function MeetingStudio() {
             id="transcript"
             value={transcript}
             onChange={(event) => setTranscript(event.target.value)}
+            placeholder={sessionId ? t.waitingTranscript : undefined}
             spellCheck={false}
           />
           <div className="transcript-footer">
