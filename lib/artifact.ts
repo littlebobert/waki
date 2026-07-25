@@ -49,48 +49,47 @@ export type EvidenceMap = z.infer<typeof evidenceMapSchema>;
 
 export type Artifact = z.infer<typeof artifactSchema>;
 
-export const sampleTranscript = `Maya: We have three weeks until the beta launch. The landing page is done, but onboarding is still the biggest risk.
+export const sampleTranscript = `Marcus: Can we get this regional sales sheet as an actual dashboard instead of squinting at cells every week?
 
-Kenji: I'll own the onboarding flow and get a testable version ready by Friday. We should keep the beta to 50 teams so support doesn't get overwhelmed.
+Priya: Yes. Revenue should be filterable by region, and I want conversion next to it so we can see why APAC is soft.
 
-Maya: Agreed. Let's make 50 teams the cap. Our north-star metric should be teams that create their first project within ten minutes.
+Marcus: Make the default view monthly, but give us a weekly toggle for the pipeline review.
 
-Luis: I can recruit 12 design partners by next Wednesday. We have eight confirmed already. The concern is analytics — we're not tracking time-to-first-project yet.
+Waki: On it — building from Priya's shared spreadsheet now.
 
-Maya: Great. Luis owns recruitment, Kenji owns onboarding, and I'll work with data to add that event by Monday. Let's review progress next Thursday.`;
+Priya: Great. Flag APAC clearly; June revenue is down 4.3% from May even though North America is up.`;
 
 export const sampleArtifact: Artifact = {
-  title: "Beta launch command center",
-  subtitle: "A live workspace shaped from today’s product sync",
-  summary: "The team aligned on a focused 50-team beta, with onboarding speed as the primary measure of activation.",
-  progress: 42,
+  title: "Q3 Revenue Dashboard",
+  subtitle: "Live from regional_sales_q3.xlsx · updated in this meeting",
+  summary: "The raw regional sales sheet is now a filterable view of monthly revenue and conversion, with APAC highlighted for follow-up.",
+  progress: 96,
   metrics: [
-    { label: "Beta capacity", value: "50", detail: "teams maximum" },
-    { label: "Design partners", value: "8 / 12", detail: "confirmed" },
-    { label: "Activation target", value: "< 10m", detail: "to first project" },
+    { label: "Revenue · Jun", value: "$1.66M", detail: "▲ 5.1% vs May" },
+    { label: "Best conversion", value: "NA · 4.2%", detail: "▲ 0.3 pts" },
+    { label: "Flagged in meeting", value: "APAC", detail: "▼ 4.3% vs May" },
   ],
   actions: [
-    { id: "a1", title: "Ship testable onboarding flow", owner: "Kenji", due: "Friday", done: false },
-    { id: "a2", title: "Recruit 12 design partners", owner: "Luis", due: "Next Wednesday", done: false },
-    { id: "a3", title: "Instrument time-to-first-project", owner: "Maya", due: "Monday", done: false },
-    { id: "a4", title: "Review beta readiness", owner: "Team", due: "Next Thursday", done: false },
+    { id: "a1", title: "Review APAC pipeline softness", owner: "Priya", due: "Friday", done: false },
+    { id: "a2", title: "Add conversion trend line", owner: "Waki", due: "In meeting", done: false },
+    { id: "a3", title: "Share dashboard with RevOps", owner: "Marcus", due: "Today", done: false },
   ],
   decisions: [
-    { title: "Cap beta at 50 teams", detail: "Keep the launch focused and avoid overwhelming support." },
-    { title: "Use activation speed as north star", detail: "Measure whether teams create a first project within ten minutes." },
+    { title: "Default to monthly revenue", detail: "Keep a weekly toggle for pipeline reviews." },
+    { title: "Show conversion beside revenue", detail: "Make regional performance explainable, not just visible." },
   ],
-  risks: ["Onboarding remains the critical path", "Activation analytics are not instrumented yet"],
+  risks: ["APAC June revenue declined despite broader growth"],
   proposals: [
-    { title: "Limit beta enrollment to 50 teams", status: "accepted" },
-    { title: "Use time-to-first-project as the north-star metric", status: "accepted" },
+    { title: "Replace the weekly spreadsheet review with a live dashboard", status: "accepted" },
+    { title: "Add conversion trend by region", status: "accepted" },
   ],
-  constraints: ["Support capacity limits the beta to 50 teams", "Activation must be measurable within ten minutes"],
+  constraints: ["Use the figures visible in regional_sales_q3.xlsx", "Support monthly and weekly views"],
   acceptanceCriteria: [
-    { id: "ac1", criterion: "Production build completes without errors", verification: "build" },
-    { id: "ac2", criterion: "A user can complete onboarding and create a first project", verification: "playwright" },
-    { id: "ac3", criterion: "Time-to-first-project analytics event is recorded", verification: "playwright" },
+    { id: "ac1", criterion: "Region filters update the visible dashboard", verification: "playwright" },
+    { id: "ac2", criterion: "Monthly and weekly views can be selected", verification: "playwright" },
+    { id: "ac3", criterion: "Production build completes without errors", verification: "build" },
   ],
-  relevantFrameIds: [],
+  relevantFrameIds: ["regional-sales-sheet"],
 };
 
 export function generateDemoArtifact(transcript: string): Artifact {

@@ -25,6 +25,17 @@ type LiveSession = {
   terminal: boolean;
 };
 
+type Region = "All" | "EMEA" | "NA" | "APAC" | "LATAM";
+
+const salesRows = [
+  { region: "EMEA" as const, april: 412300, may: 398110, june: 451900, conversion: 3.1 },
+  { region: "NA" as const, april: 688020, may: 702450, june: 731200, conversion: 4.2 },
+  { region: "APAC" as const, april: 301540, may: 355890, june: 340760, conversion: 2.7 },
+  { region: "LATAM" as const, april: 98700, may: 121300, june: 134050, conversion: 2.2 },
+];
+
+const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+
 const copy = {
   en: {
     home: "Waki home",
@@ -133,6 +144,8 @@ export function MeetingStudio() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [botState, setBotState] = useState("idle");
   const [isJoining, setIsJoining] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState<Region>("All");
+  const [period, setPeriod] = useState<"Monthly" | "Weekly">("Monthly");
   const t = copy[locale];
 
   useEffect(() => {
@@ -236,8 +249,14 @@ export function MeetingStudio() {
     setMeetingUrl("");
     setSessionId(null);
     setBotState("idle");
+    setSelectedRegion("All");
+    setPeriod("Monthly");
     setError("");
   }
+
+  const visibleSales = selectedRegion === "All"
+    ? salesRows
+    : salesRows.filter((row) => row.region === selectedRegion);
 
   return (
     <main className="app-shell">
@@ -308,10 +327,21 @@ export function MeetingStudio() {
             {sessionId && <small><span className="live-dot" /> {t.botState}: {botState.replaceAll("_", " ")}</small>}
           </div>
 
-          <div className="capture-note">
-            <span className="capture-icon"><LayoutDashboard size={16} /></span>
-            <div><strong>{t.screenReady}</strong><span>{t.screenHelp}</span></div>
-            <ChevronRight size={16} />
+          <div className="screen-source">
+            <div className="screen-source-head">
+              <span className="capture-icon"><LayoutDashboard size={16} /></span>
+              <div><strong>regional_sales_q3.xlsx</strong><span>Priya&apos;s screen · live sheet</span></div>
+              <span className="screen-live"><span className="live-dot" /> Screen</span>
+            </div>
+            <div className="sheet-grid" aria-label="Raw regional sales spreadsheet">
+              <div className="sheet-row sheet-header"><span>Region</span><span>Apr</span><span>May</span><span>Jun</span><span>Conv %</span></div>
+              {salesRows.map((row) => (
+                <div className={`sheet-row ${row.region === "APAC" ? "sheet-flagged" : ""}`} key={row.region}>
+                  <strong>{row.region}</strong><span>{money.format(row.april)}</span><span>{money.format(row.may)}</span><span>{money.format(row.june)}</span><span>{row.conversion}</span>
+                </div>
+              ))}
+            </div>
+            <div className="screen-caption"><span>{t.screenReady}</span><small>{t.screenHelp}</small><ChevronRight size={14} /></div>
           </div>
 
           <label className="transcript-label" htmlFor="transcript">{t.transcript}</label>
@@ -344,12 +374,17 @@ export function MeetingStudio() {
             <button className="open-button">{t.open} <ArrowUpRight size={15} /></button>
           </div>
 
-          <div className="summary-card">
-            <p>{artifact.summary}</p>
-            <div className="progress-row">
-              <span>{t.readiness}</span><strong>{artifact.progress}%</strong>
+          <div className="dashboard-controls" aria-label="Revenue dashboard controls">
+            <div className="region-filters">
+              {(["All", "EMEA", "NA", "APAC", "LATAM"] as Region[]).map((region) => (
+                <button key={region} className={selectedRegion === region ? "active" : ""} onClick={() => setSelectedRegion(region)}>{region}</button>
+              ))}
             </div>
-            <div className="progress-track"><span style={{ width: `${artifact.progress}%` }} /></div>
+            <div className="period-toggle">
+              {(["Monthly", "Weekly"] as const).map((value) => (
+                <button key={value} className={period === value ? "active" : ""} onClick={() => setPeriod(value)}>{value}</button>
+              ))}
+            </div>
           </div>
 
           <div className="metrics-grid">
@@ -358,6 +393,22 @@ export function MeetingStudio() {
                 <span>{metric.label}</span><strong>{metric.value}</strong><small>{metric.detail}</small>
               </div>
             ))}
+          </div>
+
+          <div className="revenue-chart-card">
+            <div className="chart-heading"><strong>{selectedRegion === "All" ? "All regions" : selectedRegion} · {period.toLowerCase()} revenue</strong><span>Connected to source sheet</span></div>
+            <div className="revenue-chart">
+              {visibleSales.map((row) => (
+                <div className="chart-group" key={row.region}>
+                  <div className="bar-stack">
+                    <span style={{ height: `${Math.max(18, row.april / 8000)}px` }} />
+                    <span style={{ height: `${Math.max(18, row.may / 8000)}px` }} />
+                    <span className={row.region === "APAC" ? "alert" : ""} style={{ height: `${Math.max(18, row.june / 8000)}px` }} />
+                  </div>
+                  <small>{row.region}{row.region === "APAC" ? " ↘" : ""}</small>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="artifact-columns">
