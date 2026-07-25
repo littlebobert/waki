@@ -19,8 +19,9 @@ Stage 2 now adds:
 
 - Qwen Cloud structured `ProductSpec` generation with strict schema validation
 - A constrained Qoder coding session over an isolated temporary app workspace
+- An optional protected FastAPI backend with in-memory demo state
 - A Daytona TypeScript sandbox with a bounded two-hour lifetime
-- Production compilation and deterministic output checks
+- React production compilation plus FastAPI compilation and API smoke checks
 - Signed, expiring Daytona preview URLs
 - Durable ProductSpec, build report, and evaluation artifacts
 - A provider-free integration test plus an opt-in live baseline command
@@ -47,8 +48,10 @@ Run the Stage 2 baseline against the makeup meeting in
 pnpm baseline:live
 ```
 
-The command prints every workflow state and finishes with a signed preview URL.
-It creates one Daytona sandbox, which is configured to expire automatically.
+The example enables the bounded FastAPI backend for team voting. The command
+prints every workflow state and finishes with a signed preview URL served by
+FastAPI. It creates one Daytona sandbox, which is configured to expire
+automatically.
 
 Run the mock bot callback receiver:
 

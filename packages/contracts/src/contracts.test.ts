@@ -121,6 +121,12 @@ describe("ProductSpecSchema", () => {
         backgroundColor: "#F8FAFC",
         fontFamily: "Inter, system-ui, sans-serif",
       },
+      backend: {
+        enabled: false,
+        framework: "none",
+        storage: "none",
+        endpoints: [],
+      },
       mockData: [
         {
           name: "campaigns",
@@ -160,6 +166,12 @@ describe("ProductSpecSchema", () => {
         backgroundColor: "#FFFFFF",
         fontFamily: "system-ui",
       },
+      backend: {
+        enabled: false,
+        framework: "none",
+        storage: "none",
+        endpoints: [],
+      },
       mockData: [],
       acceptanceCriteria: [{ id: "AC-1", requirement: "It works" }],
       assumptions: [],
@@ -168,5 +180,69 @@ describe("ProductSpecSchema", () => {
     });
 
     expect(result.success).toBe(false);
+  });
+
+  it("accepts a bounded FastAPI demo backend", () => {
+    const result = ProductSpecSchema.safeParse({
+      schemaVersion: "1.0",
+      project: {
+        name: "Team voting",
+        summary: "Vote for a hackathon team.",
+        primaryUser: "Hackathon attendee",
+        primaryGoal: "Submit one team vote",
+      },
+      pages: [
+        {
+          route: "/",
+          name: "Teams",
+          purpose: "Show teams and vote totals.",
+          sections: ["Team cards"],
+          interactions: ["Vote for a team"],
+        },
+      ],
+      design: {
+        visualDirection: "Friendly event scoreboard.",
+        primaryColor: "#2563EB",
+        accentColor: "#F59E0B",
+        backgroundColor: "#F8FAFC",
+        fontFamily: "Inter, system-ui, sans-serif",
+      },
+      backend: {
+        enabled: true,
+        framework: "fastapi",
+        storage: "memory",
+        endpoints: [
+          {
+            method: "GET",
+            path: "/api/teams",
+            purpose: "List teams and vote totals.",
+          },
+          {
+            method: "POST",
+            path: "/api/teams/{team_id}/vote",
+            purpose: "Increment a team's vote total.",
+          },
+        ],
+      },
+      mockData: [
+        {
+          name: "teams",
+          description: "Teams extracted from the reference image.",
+          sampleRecords: [{ id: "team-a", name: "Team A" }],
+        },
+      ],
+      acceptanceCriteria: [
+        {
+          id: "AC-1",
+          requirement: "A user can vote for a team.",
+          evidence: "Submitting a vote increments the visible total.",
+        },
+      ],
+      assumptions: ["Vote counts reset when the demo restarts."],
+      conflicts: [],
+      openQuestions: [],
+    });
+
+    expect(result.success).toBe(true);
   });
 });

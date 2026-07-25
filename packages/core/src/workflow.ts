@@ -165,7 +165,27 @@ export class StageTwoWorkflow {
           600,
         );
         if (install.exitCode !== 0) {
-          throw new Error(`Dependency install failed: ${install.stderr || install.stdout}`);
+          throw new Error(
+            `Dependency install failed: ${install.stderr || install.stdout}`,
+          );
+        }
+        let backendInstallOutput = "";
+        if (specification.backend.enabled) {
+          const backendInstall = await this.dependencies.sandboxes.execute(
+            sandbox,
+            "python3 -m venv .venv && " +
+              ".venv/bin/pip install --disable-pip-version-check " +
+              "-r backend/requirements.txt",
+            600,
+          );
+          if (backendInstall.exitCode !== 0) {
+            throw new Error(
+              `FastAPI dependency install failed: ${
+                backendInstall.stderr || backendInstall.stdout
+              }`,
+            );
+          }
+          backendInstallOutput = backendInstall.stdout.slice(-4_000);
         }
         const compile = await this.dependencies.sandboxes.execute(
           sandbox,
@@ -173,11 +193,28 @@ export class StageTwoWorkflow {
           600,
         );
         if (compile.exitCode !== 0) {
-          throw new Error(`Production build failed: ${compile.stderr || compile.stdout}`);
+          throw new Error(
+            `Production build failed: ${compile.stderr || compile.stdout}`,
+          );
+        }
+        if (specification.backend.enabled) {
+          const backendCompile = await this.dependencies.sandboxes.execute(
+            sandbox,
+            ".venv/bin/python -m compileall -q backend",
+            60,
+          );
+          if (backendCompile.exitCode !== 0) {
+            throw new Error(
+              `FastAPI compile failed: ${
+                backendCompile.stderr || backendCompile.stdout
+              }`,
+            );
+          }
         }
         repository.saveArtifact(job.jobId, "build-report", job.specVersion, {
           changedFiles: build.changedFiles,
           installOutput: install.stdout.slice(-4_000),
+          backendInstallOutput,
           buildOutput: compile.stdout.slice(-4_000),
         });
         return repository.transition(

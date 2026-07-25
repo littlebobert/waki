@@ -29,7 +29,7 @@
     "preferredFramework": "react",
     "language": "English",
     "allowMockData": true,
-    "allowBackend": false
+    "allowBackend": true
   },
   "callback": {
     "type": "webhook",

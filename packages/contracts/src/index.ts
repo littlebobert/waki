@@ -81,7 +81,7 @@ export const DemoRequestSchema = z
         preferredFramework: z.enum(["react"]).default("react"),
         language: z.string().min(2).max(64).default("English"),
         allowMockData: z.literal(true).default(true),
-        allowBackend: z.literal(false).default(false),
+        allowBackend: z.boolean().default(false),
       })
       .strict()
       .default({
@@ -191,13 +191,57 @@ export const ProductSpecSchema = z
         fontFamily: z.string().trim().min(1).max(120),
       })
       .strict(),
+    backend: z
+      .object({
+        enabled: z.boolean(),
+        framework: z.enum(["none", "fastapi"]),
+        storage: z.enum(["none", "memory"]),
+        endpoints: z
+          .array(
+            z
+              .object({
+                method: z.enum(["GET", "POST"]),
+                path: z.string().regex(/^\/api\/[A-Za-z0-9_/{}/-]+$/),
+                purpose: ProductSpecTextSchema,
+              })
+              .strict(),
+          )
+          .max(12),
+      })
+      .strict()
+      .superRefine((backend, context) => {
+        if (
+          backend.enabled &&
+          (backend.framework !== "fastapi" || backend.storage !== "memory")
+        ) {
+          context.addIssue({
+            code: "custom",
+            message:
+              "Enabled backends must use FastAPI with in-memory storage",
+          });
+        }
+        if (
+          !backend.enabled &&
+          (backend.framework !== "none" ||
+            backend.storage !== "none" ||
+            backend.endpoints.length > 0)
+        ) {
+          context.addIssue({
+            code: "custom",
+            message: "Disabled backends must use none and have no endpoints",
+          });
+        }
+      }),
     mockData: z
       .array(
         z
           .object({
             name: z.string().trim().min(1).max(80),
             description: ProductSpecTextSchema,
-            sampleRecords: z.array(z.record(z.string(), z.unknown())).min(1).max(12),
+            sampleRecords: z
+              .array(z.record(z.string(), z.unknown()))
+              .min(1)
+              .max(50),
           })
           .strict(),
       )

@@ -50,6 +50,17 @@ function meetingContext(request: DemoRequest): Record<string, unknown> {
 }
 
 function productSpecPrompt(request: DemoRequest): string {
+  const backendInstructions = request.preferences.allowBackend
+    ? [
+        "A tiny backend is allowed for this request.",
+        "Use only FastAPI with in-memory storage, no database and no login.",
+        "Set backend.enabled to true, framework to fastapi, and storage to memory.",
+        "Keep the API to the minimum GET/POST endpoints needed by the primary workflow.",
+      ]
+    : [
+        "This request is frontend-only. Do not require a backend.",
+        "Set backend.enabled to false, framework and storage to none, and endpoints to [].",
+      ];
   return [
     "Create a ProductSpec JSON object for a hackathon mini-app.",
     "Optimize for a simple, convincing hackathon demo that can be built quickly.",
@@ -63,9 +74,15 @@ function productSpecPrompt(request: DemoRequest): string {
     "can implement them without direct access to the images.",
     "Return JSON only. Do not use Markdown or commentary.",
     "Use schemaVersion 1.0.",
-    "Limit the result to 1-3 pages and a frontend-only React experience.",
-    "Use realistic local mock data. Do not require authentication, a backend,",
+    "Limit the result to 1-3 pages and a React experience.",
+    "Page routes must contain only lowercase path segments and hyphens, such as",
+    '"/" or "/vote". Never put parameters, colons, braces, or query strings in routes.',
+    "Represent a selected team with a query parameter in the interaction, not a route.",
+    ...backendInstructions,
+    "Use realistic local mock data. Do not require authentication,",
     "external APIs, paid assets, or remote images.",
+    "When a team list is visible in an attached image, include every readable",
+    "team in a mockData dataset named teams with id and name fields.",
     "Every acceptance criterion needs a unique AC-N id and observable evidence.",
     "Record missing details as assumptions or openQuestions; never invent secrets.",
     "",
@@ -94,6 +111,30 @@ function productSpecPrompt(request: DemoRequest): string {
         backgroundColor: "#RRGGBB",
         fontFamily: "string",
       },
+      backend: request.preferences.allowBackend
+        ? {
+            enabled: true,
+            framework: "fastapi",
+            storage: "memory",
+            endpoints: [
+              {
+                method: "GET",
+                path: "/api/resource",
+                purpose: "string",
+              },
+              {
+                method: "POST",
+                path: "/api/resource/{resource_id}/action",
+                purpose: "string",
+              },
+            ],
+          }
+        : {
+            enabled: false,
+            framework: "none",
+            storage: "none",
+            endpoints: [],
+          },
       mockData: [
         {
           name: "string",
@@ -145,6 +186,12 @@ export class QwenRequirementProcessor implements RequirementProcessor {
       );
     }
     this.model = options.model ?? "qwen3.7-plus";
+    if (this.model === "qwen3.8-max-preview") {
+      throw new Error(
+        "Qwen model qwen3.8-max-preview is thinking-only and cannot produce " +
+          "the structured JSON required by this workflow. Use qwen3.7-plus.",
+      );
+    }
     this.fetchImplementation = options.fetchImplementation ?? fetch;
     this.timeoutMs = options.timeoutMs ?? 180_000;
   }
@@ -220,6 +267,12 @@ export class QwenRequirementProcessor implements RequirementProcessor {
     } catch (error) {
       const detail = error instanceof Error ? error.message : "Unknown error";
       throw new Error(`Qwen returned an invalid ProductSpec: ${detail}`);
+    }
+    if (document.backend.enabled !== request.preferences.allowBackend) {
+      throw new Error(
+        "Qwen returned a ProductSpec whose backend setting does not match " +
+          "the request preference",
+      );
     }
 
     return { version: 1, document };

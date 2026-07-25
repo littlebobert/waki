@@ -22,6 +22,22 @@ async function main(): Promise<void> {
       ),
     ),
   );
+  const localImagePath = process.env.BASELINE_IMAGE_PATH?.trim();
+  if (localImagePath) {
+    const screenshot = request.inputs.screenshots[0];
+    if (!screenshot) {
+      throw new Error(
+        "BASELINE_IMAGE_PATH requires a screenshot entry in the demo request",
+      );
+    }
+    const image = await readFile(path.resolve(localImagePath));
+    if (image.byteLength > 10_000_000) {
+      throw new Error("The local baseline image must be 10 MB or smaller");
+    }
+    screenshot.url =
+      `data:${screenshot.mimeType};base64,${image.toString("base64")}`;
+    console.log(`Using local baseline image: ${path.basename(localImagePath)}`);
+  }
   const repository = new JobRepository(":memory:");
   const daytona = new DaytonaRuntime({
     apiKey: process.env.DAYTONA_API_KEY ?? "",

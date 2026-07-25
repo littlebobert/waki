@@ -50,6 +50,12 @@ const specification: ProductSpec = {
     backgroundColor: "#F8FAFC",
     fontFamily: "Inter, system-ui, sans-serif",
   },
+  backend: {
+    enabled: false,
+    framework: "none",
+    storage: "none",
+    endpoints: [],
+  },
   mockData: [
     {
       name: "campaigns",
@@ -152,6 +158,76 @@ describe("QwenRequirementProcessor", () => {
     expect(fetchImplementation).toHaveBeenCalledOnce();
   });
 
+  it("requests the bounded FastAPI shape only when backend is allowed", async () => {
+    const backendSpecification: ProductSpec = {
+      ...specification,
+      backend: {
+        enabled: true,
+        framework: "fastapi",
+        storage: "memory",
+        endpoints: [
+          {
+            method: "GET",
+            path: "/api/teams",
+            purpose: "List teams and votes.",
+          },
+          {
+            method: "POST",
+            path: "/api/teams/{team_id}/vote",
+            purpose: "Submit a vote.",
+          },
+        ],
+      },
+    };
+    const fetchImplementation = vi.fn(async (_input, init) => {
+      const payload = JSON.parse(String(init?.body)) as {
+        messages: Array<{
+          content: Array<{ type: string; text?: string }>;
+        }>;
+      };
+      const prompt = payload.messages[1]?.content.at(-1)?.text;
+      expect(prompt).toContain("A tiny backend is allowed");
+      expect(prompt).toContain("FastAPI with in-memory storage");
+      expect(prompt).toContain(
+        "Never put parameters, colons, braces, or query strings in routes",
+      );
+      return new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify(backendSpecification),
+              },
+            },
+          ],
+        }),
+        { status: 200 },
+      );
+    }) as typeof fetch;
+    const provider = new QwenRequirementProcessor({
+      apiKey: "test-key",
+      fetchImplementation,
+    });
+
+    await expect(
+      provider.createProductSpec({
+        ...request,
+        preferences: {
+          ...request.preferences,
+          allowBackend: true,
+        },
+      }),
+    ).resolves.toMatchObject({
+      document: {
+        backend: {
+          enabled: true,
+          framework: "fastapi",
+          storage: "memory",
+        },
+      },
+    });
+  });
+
   it("rejects a structurally invalid ProductSpec", async () => {
     const provider = new QwenRequirementProcessor({
       apiKey: "test-key",
@@ -169,6 +245,31 @@ describe("QwenRequirementProcessor", () => {
     );
   });
 
+  it("rejects a backend setting that contradicts the request", async () => {
+    const provider = new QwenRequirementProcessor({
+      apiKey: "test-key",
+      fetchImplementation: (async () =>
+        new Response(
+          JSON.stringify({
+            choices: [
+              { message: { content: JSON.stringify(specification) } },
+            ],
+          }),
+          { status: 200 },
+        )) as typeof fetch,
+    });
+
+    await expect(
+      provider.createProductSpec({
+        ...request,
+        preferences: {
+          ...request.preferences,
+          allowBackend: true,
+        },
+      }),
+    ).rejects.toThrow("backend setting does not match");
+  });
+
   it("rejects a plan key paired with the pay-as-you-go endpoint", () => {
     expect(
       () =>
@@ -178,5 +279,15 @@ describe("QwenRequirementProcessor", () => {
             "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
         }),
     ).toThrow("credential mismatch");
+  });
+
+  it("rejects the thinking-only preview model", () => {
+    expect(
+      () =>
+        new QwenRequirementProcessor({
+          apiKey: "test-key",
+          model: "qwen3.8-max-preview",
+        }),
+    ).toThrow("thinking-only");
   });
 });

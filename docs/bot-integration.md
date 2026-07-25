@@ -84,6 +84,27 @@ Short-lived signed URLs from the bot's existing object storage are recommended.
 The Stage 2 baseline passes URLs directly to QwenCloud; it does not download or
 store image bytes.
 
+## Optional demo backend
+
+Set the request preference when a mini-app needs simple mutable demo state:
+
+```json
+{
+  "preferences": {
+    "allowBackend": true
+  }
+}
+```
+
+When enabled, Qwen may specify only the bounded backend supported by Waki:
+FastAPI with in-memory storage and `GET` or `POST` routes under `/api/*`. Waki
+generates that service deterministically and prevents Qoder from editing it.
+Qoder builds the React UI against the fixed API.
+
+This is intended for hackathon demos, not production persistence. There is no
+database or login, and all state resets when the backend process or Daytona
+sandbox restarts. Leave `allowBackend` as `false` for a frontend-only demo.
+
 ## Read status and events
 
 ```http

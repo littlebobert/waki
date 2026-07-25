@@ -11,7 +11,8 @@ import type {
 } from "@waki/core";
 
 const REMOTE_WORKSPACE = "/home/daytona/app";
-const PREVIEW_PORT = 3000;
+const FRONTEND_PREVIEW_PORT = 3000;
+const FASTAPI_PREVIEW_PORT = 8000;
 
 interface DaytonaRuntimeOptions {
   apiKey: string;
@@ -27,6 +28,7 @@ export class DaytonaRuntime
   private readonly client: Daytona;
   private readonly ttlMinutes: number;
   private readonly previewTtlSeconds: number;
+  private readonly runningFastApiSandboxes = new Set<string>();
 
   constructor(options: DaytonaRuntimeOptions) {
     if (!options.apiKey.trim()) {
@@ -93,17 +95,48 @@ export class DaytonaRuntime
     handle: SandboxHandle,
     specification: ProductSpecArtifact,
   ): Promise<EvaluationReport> {
+    const staticCheckCommand = specification.document.backend.enabled
+      ? "test -f dist/index.html && test -s dist/index.html && " +
+        "test -f backend/main.py && test -x .venv/bin/python"
+      : "test -f dist/index.html && test -s dist/index.html";
     const result = await this.execute(
       handle,
-      "test -f dist/index.html && test -s dist/index.html",
+      staticCheckCommand,
       30,
     );
+    const functionalFailures: string[] = [];
+    if (result.exitCode !== 0) {
+      functionalFailures.push(
+        specification.document.backend.enabled
+          ? "The React build or FastAPI environment is incomplete"
+          : "The production build did not create dist/index.html",
+      );
+    } else if (specification.document.backend.enabled) {
+      await this.startFastApi(handle);
+      let smokePassed = false;
+      let lastOutput = "";
+      for (let attempt = 0; attempt < 10; attempt += 1) {
+        const smoke = await this.execute(
+          handle,
+          ".venv/bin/python backend/smoke_test.py",
+          15,
+        );
+        lastOutput = smoke.stderr || smoke.stdout;
+        if (smoke.exitCode === 0) {
+          smokePassed = true;
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 750));
+      }
+      if (!smokePassed) {
+        functionalFailures.push(
+          `FastAPI voting smoke test failed: ${lastOutput.slice(-1_000)}`,
+        );
+      }
+    }
     return {
-      passed: result.exitCode === 0,
-      functionalFailures:
-        result.exitCode === 0
-          ? []
-          : ["The production build did not create dist/index.html"],
+      passed: functionalFailures.length === 0,
+      functionalFailures,
       visualIssues: specification.document.openQuestions.length
         ? [
             {
@@ -120,16 +153,22 @@ export class DaytonaRuntime
     handle: SandboxHandle,
   ): Promise<{ url: string; expiresAt: string }> {
     const sandbox = await this.getSandbox(handle);
-    const sessionId = `preview-${handle.id.slice(0, 12)}`;
-    await sandbox.process.createSession(sessionId);
-    await sandbox.process.executeSessionCommand(sessionId, {
-      command:
-        `cd ${REMOTE_WORKSPACE} && ` +
-        `npm run dev -- --host 0.0.0.0 --port ${PREVIEW_PORT}`,
-      runAsync: true,
-    });
+    const backendEnabled = this.runningFastApiSandboxes.has(handle.id);
+    if (!backendEnabled) {
+      const sessionId = `preview-${handle.id.slice(0, 12)}`;
+      await sandbox.process.createSession(sessionId);
+      await sandbox.process.executeSessionCommand(sessionId, {
+        command:
+          `cd ${REMOTE_WORKSPACE} && ` +
+          `npm run dev -- --host 0.0.0.0 --port ${FRONTEND_PREVIEW_PORT}`,
+        runAsync: true,
+      });
+    }
+    const previewPort = backendEnabled
+      ? FASTAPI_PREVIEW_PORT
+      : FRONTEND_PREVIEW_PORT;
     const preview = await sandbox.getSignedPreviewUrl(
-      PREVIEW_PORT,
+      previewPort,
       this.previewTtlSeconds,
     );
     await this.waitUntilReachable(preview.url);
@@ -139,6 +178,23 @@ export class DaytonaRuntime
         Date.now() + this.previewTtlSeconds * 1_000,
       ).toISOString(),
     };
+  }
+
+  private async startFastApi(handle: SandboxHandle): Promise<void> {
+    if (this.runningFastApiSandboxes.has(handle.id)) {
+      return;
+    }
+    const sandbox = await this.getSandbox(handle);
+    const sessionId = `fastapi-${handle.id.slice(0, 12)}`;
+    await sandbox.process.createSession(sessionId);
+    await sandbox.process.executeSessionCommand(sessionId, {
+      command:
+        `cd ${REMOTE_WORKSPACE} && ` +
+        ".venv/bin/python -m uvicorn backend.main:app " +
+        `--host 0.0.0.0 --port ${FASTAPI_PREVIEW_PORT}`,
+      runAsync: true,
+    });
+    this.runningFastApiSandboxes.add(handle.id);
   }
 
   private async waitUntilReachable(url: string): Promise<void> {

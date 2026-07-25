@@ -57,6 +57,12 @@ const specification: ProductSpec = {
     backgroundColor: "#F8FAFC",
     fontFamily: "Inter, system-ui, sans-serif",
   },
+  backend: {
+    enabled: false,
+    framework: "none",
+    storage: "none",
+    endpoints: [],
+  },
   mockData: [
     {
       name: "campaigns",
@@ -165,6 +171,107 @@ describe("StageTwoWorkflow", () => {
         .map((event) => event.event)
         .at(-1),
     ).toBe("demo.preview_ready");
+    repository.close();
+  });
+
+  it("installs and compiles FastAPI when the ProductSpec enables it", async () => {
+    const repository = new JobRepository(":memory:");
+    const { job } = repository.createJob({
+      ...request,
+      requestId: "req_fastapi",
+      preferences: {
+        ...request.preferences,
+        allowBackend: true,
+      },
+    });
+    const commands: string[] = [];
+    const backendDocument: ProductSpec = {
+      ...specification,
+      backend: {
+        enabled: true,
+        framework: "fastapi",
+        storage: "memory",
+        endpoints: [
+          {
+            method: "GET",
+            path: "/api/teams",
+            purpose: "List teams and votes.",
+          },
+          {
+            method: "POST",
+            path: "/api/teams/{team_id}/vote",
+            purpose: "Submit a vote.",
+          },
+        ],
+      },
+      mockData: [
+        {
+          name: "teams",
+          description: "Hackathon teams.",
+          sampleRecords: [{ id: "team-a", name: "Team A" }],
+        },
+      ],
+    };
+    const workflow = new StageTwoWorkflow({
+      repository,
+      requirements: {
+        async createProductSpec() {
+          return { version: 1, document: backendDocument };
+        },
+      },
+      sandboxes: {
+        async create() {
+          return { id: "sandbox_fastapi" };
+        },
+        async uploadDirectory() {},
+        async execute(_sandbox, command) {
+          commands.push(command);
+          return { exitCode: 0, stdout: "ok", stderr: "" };
+        },
+        async destroy() {},
+      },
+      codeAgent: {
+        async build() {
+          return {
+            commit: null,
+            changedFiles: ["src/App.tsx", "backend/main.py"],
+            localPath: "/tmp/fake-fastapi-build",
+          };
+        },
+        async repair() {
+          throw new Error("repair should not be called");
+        },
+      },
+      evaluator: {
+        async evaluate() {
+          return {
+            passed: true,
+            functionalFailures: [],
+            visualIssues: [],
+          };
+        },
+      },
+      previews: {
+        async publish() {
+          return {
+            url: "https://preview.example.test",
+            expiresAt: "2030-01-01T00:00:00.000Z",
+          };
+        },
+      },
+    });
+
+    await workflow.runUntilIdle();
+
+    expect(repository.getJob(job.jobId)?.status).toBe("PREVIEW_READY");
+    expect(commands).toEqual([
+      "npm install --no-audit --no-fund",
+      "python3 -m venv .venv && " +
+        ".venv/bin/pip install --disable-pip-version-check " +
+        "-r backend/requirements.txt",
+      "npm run build",
+      ".venv/bin/python -m compileall -q backend",
+    ]);
     repository.close();
   });
 

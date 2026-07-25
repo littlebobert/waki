@@ -23,6 +23,10 @@ mixed. This backend currently targets the pay-as-you-go endpoint documented in
 the Qwen Cloud developer quickstart. A key beginning with `sk-sp-` is a plan
 key, not the pay-as-you-go key this backend needs.
 
+The ProductSpec workflow requires image-capable structured JSON in non-thinking
+mode. Use `qwen3.7-plus`; `qwen3.8-max-preview` is thinking-only and is not
+compatible with this workflow's JSON Object response.
+
 ## Daytona
 
 Create a key in the Daytona dashboard with sandbox permissions:
