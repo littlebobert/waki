@@ -11,8 +11,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "waki",
-      "database_id": "replace-with-your-d1-database-id",
+      "database_name": "waki-database",
+      "database_id": "1363f06d-9741-473b-8938-bf77103c28fa",
       "migrations_dir": "migrations"
     }
   ],
