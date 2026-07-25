@@ -5,7 +5,7 @@ import type { WakiEnv } from "./lib/cloudflare";
 
 export { AttendeeVideoStream } from "./cloudflare/attendee-video-stream";
 
-export default {
+const worker = {
   async fetch(request: Request, env: WakiEnv, ctx: ExecutionContext) {
     const url = new URL(request.url);
 
@@ -24,3 +24,5 @@ export default {
     return handler.fetch(request, env, ctx);
   },
 };
+
+export default worker;

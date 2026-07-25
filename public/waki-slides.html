@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Waki — Ideas, made present.</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Manrope:wght@500;600;700&display=swap");
+
+    :root {
+      --ink: #20231f;
+      --muted: #747970;
+      --paper: #f4f1e9;
+      --panel: #fbfaf6;
+      --line: #dedbd2;
+      --moss: #52634d;
+      --moss-dark: #354231;
+      --persimmon: #d76743;
+      --soft-green: #e8eee4;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body { color: var(--ink); background: #dedbd2; font-family: "DM Sans", sans-serif; }
+    button { font: inherit; }
+
+    .deck { position: relative; width: 100%; height: 100%; }
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      width: 100%;
+      height: 100%;
+      padding: clamp(48px, 6vw, 104px);
+      overflow: hidden;
+      background: var(--paper);
+    }
+    .slide.active { display: flex; animation: enter .35s ease both; }
+    .slide-inner { width: min(100%, 1440px); height: 100%; margin: auto; display: flex; flex-direction: column; }
+    .slide-top { display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 14px; font: 700 24px Manrope, sans-serif; letter-spacing: -.03em; }
+    .brand-mark { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 13px; color: #fff; background: var(--moss-dark); font-family: serif; }
+    .slide-no, .eyebrow { color: var(--persimmon); font-size: 14px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .slide-no { color: var(--muted); }
+    h1, h2, h3 { margin: 0; font-family: Manrope, sans-serif; letter-spacing: -.055em; }
+    h1 { max-width: 1100px; font-size: clamp(64px, 8.2vw, 132px); line-height: .93; }
+    h2 { max-width: 1080px; font-size: clamp(50px, 6.1vw, 94px); line-height: .98; }
+    h3 { font-size: clamp(24px, 2.3vw, 38px); line-height: 1.06; }
+    p { margin: 0; color: var(--muted); }
+    .accent { color: var(--persimmon); }
+    .moss { color: var(--moss); }
+
+    .title-content { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .title-content .eyebrow { margin-bottom: 28px; }
+    .title-content p { max-width: 780px; margin-top: 34px; font-size: clamp(22px, 2vw, 32px); line-height: 1.45; }
+    .title-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 28px; border-top: 1px solid var(--line); color: var(--muted); font-size: 15px; }
+
+    .problem-layout { flex: 1; display: grid; grid-template-columns: .9fr 1.1fr; align-items: center; gap: 8vw; }
+    .problem-copy .eyebrow, .solution-copy .eyebrow, .flow-copy .eyebrow { margin-bottom: 24px; }
+    .problem-copy p { max-width: 600px; margin-top: 28px; font-size: clamp(20px, 1.7vw, 28px); line-height: 1.5; }
+    .meeting-trail { position: relative; min-height: 540px; }
+    .meeting-line { position: absolute; left: 50%; top: 20px; bottom: 20px; width: 2px; background: var(--line); }
+    .meeting-item { position: relative; display: grid; grid-template-columns: 1fr 52px 1fr; align-items: center; min-height: 124px; }
+    .meeting-item:nth-child(odd) .bubble { grid-column: 1; text-align: right; }
+    .meeting-item:nth-child(even) .bubble { grid-column: 3; }
+    .meeting-item .dot { grid-column: 2; grid-row: 1; justify-self: center; z-index: 2; width: 16px; height: 16px; border: 4px solid var(--paper); border-radius: 50%; background: var(--persimmon); }
+    .bubble { padding: 20px 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); }
+    .bubble strong { display: block; font-size: 20px; }
+    .bubble span { display: block; margin-top: 6px; color: var(--muted); font-size: 15px; }
+    .fade-out { opacity: .38; }
+
+    .solution-layout { flex: 1; display: grid; grid-template-columns: .8fr 1.2fr; align-items: center; gap: 7vw; }
+    .solution-copy p { max-width: 540px; margin-top: 28px; font-size: clamp(20px, 1.7vw, 28px); line-height: 1.5; }
+    .artifact { padding: 30px; border: 1px solid var(--line); border-radius: 24px; background: var(--panel); }
+    .artifact-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+    .made { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .made i { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; color: #fff; background: var(--moss-dark); font: normal 15px serif; }
+    .demo { padding: 7px 12px; border-radius: 999px; color: var(--muted); background: #efede7; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .artifact h3 { margin-top: 28px; font-size: clamp(30px, 3vw, 48px); }
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 28px; }
+    .metric { min-height: 112px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #f7f5ef; }
+    .metric span { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .metric strong { display: block; margin-top: 18px; font: 700 30px Manrope, sans-serif; letter-spacing: -.04em; }
+    .bars { display: flex; align-items: end; justify-content: space-around; height: 210px; margin-top: 14px; padding: 28px 30px 18px; border: 1px solid var(--line); border-radius: 14px; background: repeating-linear-gradient(to bottom, #fbfaf6 0, #fbfaf6 52px, #ebe9e2 53px); }
+    .bar-set { display: flex; align-items: end; gap: 6px; height: 150px; }
+    .bar { width: 16px; border-radius: 4px 4px 0 0; background: var(--moss-dark); }
+    .bar:nth-child(1) { opacity: .38; } .bar:nth-child(2) { opacity: .55; } .bar:nth-child(3) { opacity: .72; }
+    .bar.alert { background: var(--persimmon); opacity: 1; }
+
+    .flow-layout { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .flow-copy { display: flex; align-items: end; justify-content: space-between; gap: 48px; }
+    .flow-copy p { max-width: 470px; padding-bottom: 7px; font-size: 22px; line-height: 1.45; }
+    .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 64px; }
+    .step { position: relative; min-height: 300px; padding: 30px; border: 1px solid var(--line); border-radius: 20px; background: var(--panel); }
+    .step::after { content: "→"; position: absolute; right: -28px; top: 50%; z-index: 2; color: var(--persimmon); font-size: 30px; font-weight: 700; }
+    .step:last-child::after { display: none; }
+    .step-no { color: var(--persimmon); font-size: 13px; font-weight: 700; letter-spacing: .12em; }
+    .step-icon { display: grid; place-items: center; width: 62px; height: 62px; margin: 35px 0 28px; border-radius: 17px; color: #fff; background: var(--moss-dark); font-size: 27px; }
+    .step p { margin-top: 12px; font-size: 17px; line-height: 1.45; }
+    .proof { display: flex; justify-content: center; gap: 34px; margin-top: 34px; color: var(--muted); font-size: 14px; }
+    .proof span { display: flex; align-items: center; gap: 8px; }
+    .proof i { width: 8px; height: 8px; border-radius: 50%; background: var(--moss); }
+
+    .controls { position: fixed; right: 28px; bottom: 24px; z-index: 20; display: flex; align-items: center; gap: 8px; }
+    .controls button { width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 11px; color: var(--ink); background: var(--panel); cursor: pointer; }
+    .controls button:hover { background: var(--soft-green); }
+    .progress { position: fixed; left: 0; bottom: 0; z-index: 20; height: 5px; background: var(--persimmon); transition: width .25s ease; }
+    .hint { position: fixed; left: 28px; bottom: 24px; z-index: 20; color: var(--muted); font-size: 12px; }
+
+    @keyframes enter { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: translateX(0); } }
+
+    @media (max-width: 900px) {
+      .problem-layout, .solution-layout { grid-template-columns: 1fr; gap: 32px; }
+      .meeting-trail { min-height: 380px; transform: scale(.82); transform-origin: top center; }
+      .artifact { transform: scale(.83); transform-origin: top center; }
+      .flow { grid-template-columns: repeat(2, 1fr); margin-top: 30px; }
+      .step { min-height: 210px; }
+      .step::after { display: none; }
+      .flow-copy { align-items: start; flex-direction: column; }
+    }
+
+    @media print {
+      html, body { overflow: visible; background: #fff; }
+      .deck { height: auto; }
+      .slide, .slide.active { position: relative; display: flex; width: 13.333in; height: 7.5in; break-after: page; padding: .65in; animation: none; }
+      .controls, .progress, .hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck">
+    <section class="slide active" aria-label="Title slide">
+      <div class="slide-inner">
+        <div class="slide-top">
+          <div class="brand"><span class="brand-mark">脇</span>Waki</div>
+          <span class="slide-no">01 / 04</span>
+        </div>
+        <div class="title-content">
+          <span class="eyebrow">Ideas, made present.</span>
+          <h1>Turn the meeting into the <span class="accent">thing itself.</span></h1>
+          <p>A quiet AI companion that listens, looks, and builds useful software while everyone is still in the room.</p>
+        </div>
+        <div class="title-footer"><span>Tokyo · 2026</span><span>Meeting-native app generation</span></div>
+      </div>
+    </section>
+
+    <section class="slide" aria-label="The problem">
+      <div class="slide-inner">
+        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">02 / 04</span></div>
+        <div class="problem-layout">
+          <div class="problem-copy">
+            <span class="eyebrow">The problem</span>
+            <h2>Great ideas usually <span class="accent">die after the meeting.</span></h2>
+            <p>Meetings create intent. Then someone still has to translate it into specs, tickets, and software.</p>
+          </div>
+          <div class="meeting-trail" aria-hidden="true">
+            <div class="meeting-line"></div>
+            <div class="meeting-item"><div class="bubble"><strong>“Can we make this visual?”</strong><span>Clear idea</span></div><i class="dot"></i></div>
+            <div class="meeting-item"><div class="bubble fade-out"><strong>Write the notes</strong><span>Context starts fading</span></div><i class="dot"></i></div>
+            <div class="meeting-item"><div class="bubble fade-out"><strong>Create the tickets</strong><span>Days later</span></div><i class="dot"></i></div>
+            <div class="meeting-item"><div class="bubble fade-out"><strong>Wait for the build</strong><span>Momentum lost</span></div><i class="dot"></i></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" aria-label="The solution">
+      <div class="slide-inner">
+        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">03 / 04</span></div>
+        <div class="solution-layout">
+          <div class="solution-copy">
+            <span class="eyebrow">The solution</span>
+            <h2>Waki builds while you <span class="moss">talk.</span></h2>
+            <p>It combines the live conversation with what is shared on screen, then turns intent into an interactive app.</p>
+          </div>
+          <div class="artifact" aria-label="Example generated revenue dashboard">
+            <div class="artifact-head"><div class="made"><i>脇</i>Waki made this</div><span class="demo">Live artifact</span></div>
+            <h3>Q3 Revenue Dashboard</h3>
+            <div class="metrics">
+              <div class="metric"><span>Revenue · Jun</span><strong>$1.66M</strong></div>
+              <div class="metric"><span>Best conversion</span><strong>NA · 4.2%</strong></div>
+              <div class="metric"><span>Flagged</span><strong>APAC</strong></div>
+            </div>
+            <div class="bars">
+              <div class="bar-set"><i class="bar" style="height:64px"></i><i class="bar" style="height:72px"></i><i class="bar" style="height:84px"></i><i class="bar" style="height:92px"></i></div>
+              <div class="bar-set"><i class="bar" style="height:98px"></i><i class="bar" style="height:112px"></i><i class="bar" style="height:126px"></i><i class="bar" style="height:142px"></i></div>
+              <div class="bar-set"><i class="bar" style="height:58px"></i><i class="bar" style="height:73px"></i><i class="bar" style="height:91px"></i><i class="bar alert" style="height:82px"></i></div>
+              <div class="bar-set"><i class="bar" style="height:36px"></i><i class="bar" style="height:43px"></i><i class="bar" style="height:51px"></i><i class="bar" style="height:58px"></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" aria-label="How it works">
+      <div class="slide-inner">
+        <div class="slide-top"><div class="brand"><span class="brand-mark">脇</span>Waki</div><span class="slide-no">04 / 04</span></div>
+        <div class="flow-layout">
+          <div class="flow-copy">
+            <div><span class="eyebrow">How it works</span><h2>From room intent to <span class="accent">working interface.</span></h2></div>
+            <p>Multimodal understanding, grounded generation, deterministic verification.</p>
+          </div>
+          <div class="flow">
+            <article class="step"><span class="step-no">01</span><div class="step-icon">⌁</div><h3>Join</h3><p>Waki enters the Google Meet.</p></article>
+            <article class="step"><span class="step-no">02</span><div class="step-icon">◉</div><h3>Listen + look</h3><p>Transcript and sampled screen frames.</p></article>
+            <article class="step"><span class="step-no">03</span><div class="step-icon">◇</div><h3>Understand</h3><p>Qwen grounds intent in evidence.</p></article>
+            <article class="step"><span class="step-no">04</span><div class="step-icon">▦</div><h3>Build</h3><p>An interactive artifact appears.</p></article>
+          </div>
+          <div class="proof"><span><i></i>Attendee live capture</span><span><i></i>Qwen multimodal analysis</span><span><i></i>Build + Playwright verification</span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="hint">Arrow keys to navigate · F for fullscreen · P to print</div>
+  <div class="controls"><button id="prev" aria-label="Previous slide">←</button><button id="next" aria-label="Next slide">→</button></div>
+  <div class="progress" id="progress"></div>
+
+  <script>
+    const slides = [...document.querySelectorAll('.slide')];
+    const progress = document.getElementById('progress');
+    let current = 0;
+
+    function show(index) {
+      current = Math.max(0, Math.min(slides.length - 1, index));
+      slides.forEach((slide, i) => slide.classList.toggle('active', i === current));
+      progress.style.width = `${((current + 1) / slides.length) * 100}%`;
+      document.getElementById('prev').disabled = current === 0;
+      document.getElementById('next').disabled = current === slides.length - 1;
+    }
+
+    document.getElementById('prev').addEventListener('click', () => show(current - 1));
+    document.getElementById('next').addEventListener('click', () => show(current + 1));
+    document.addEventListener('keydown', async (event) => {
+      if (['ArrowRight', 'PageDown', ' '].includes(event.key)) { event.preventDefault(); show(current + 1); }
+      if (['ArrowLeft', 'PageUp'].includes(event.key)) { event.preventDefault(); show(current - 1); }
+      if (event.key.toLowerCase() === 'f') await document.documentElement.requestFullscreen?.();
+      if (event.key.toLowerCase() === 'p') window.print();
+      if (event.key === 'Home') show(0);
+      if (event.key === 'End') show(slides.length - 1);
+    });
+    show(0);
+  </script>
+</body>
+</html>
